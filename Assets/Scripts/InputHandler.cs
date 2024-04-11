@@ -388,6 +388,11 @@ namespace Tutorials
             }
         }
 
+        public void startFollow()
+        {
+            player.startFollowMode();
+        }
+
         /// <summary>
         /// Should be called when the user changes the position or rotation of the animation specific point of reference changed.
         /// </summary>

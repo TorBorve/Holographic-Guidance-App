@@ -269,7 +269,7 @@ namespace Tutorials
             if (isPlaying)
             {
                 // local time is updated according to the fps delta time, taking the speed into accound. 
-                localTime += Time.deltaTime * (float)(animationWrapper.Speed);
+                localTime += Time.deltaTime * 0.5f * (float)(animationWrapper.Speed);
 
 
                 // if the local time is before the start frame, the local time is set to the time of the first frame (i.e. to the selected beginning of the animation)
@@ -404,6 +404,10 @@ namespace Tutorials
                 riggedHandVisualizerRight.UpdateHandJoints(joints, isTracked);
             }
 
+        }
+        public void startFollowMode()
+        {
+            Play();
         }
     }
 
