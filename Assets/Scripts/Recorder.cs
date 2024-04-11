@@ -673,6 +673,11 @@ namespace Tutorials
         {
             RecordingBuffer.RemoveBeforeTime(StartTime);
         }
+
+        public InputRecordingBuffer.Keyframe GetLatestKeyframe()
+        {
+            return RecordingBuffer.GetLatestKeyframe();
+        }
     }
 
 }

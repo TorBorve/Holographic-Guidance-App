@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.MixedReality.Toolkit.Utilities;
 using UnityEngine;
 
@@ -257,10 +258,18 @@ namespace Tutorials
         /// <returns>The index of the new keyframe</returns>
         public int NewKeyframe(float time)
         {
+            latestValidKeyframe = currentKeyframe;
             currentKeyframe = new Keyframe(time);
             keyframes.Enqueue(currentKeyframe);
 
             return keyframes.Count - 1;
+        }
+
+        private Keyframe latestValidKeyframe;
+
+        public Keyframe GetLatestKeyframe()
+        {
+            return latestValidKeyframe;
         }
 
         /// <summary>

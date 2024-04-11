@@ -19,6 +19,9 @@ namespace Tutorials
         private Player player;
 
         [SerializeField]
+        private Follower follower;
+
+        [SerializeField]
         private Transform animationSpecificPointOfReference;
 
         [SerializeField]
@@ -390,7 +393,9 @@ namespace Tutorials
 
         public void startFollow()
         {
-            player.startFollowMode();
+            follower.SetFollower(player, recorder);
+            follower.playAnimation();
+
         }
 
         /// <summary>
