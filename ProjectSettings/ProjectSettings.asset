@@ -12,7 +12,7 @@ PlayerSettings:
   targetDevice: 2
   useOnDemandResources: 0
   accelerometerFrequency: 60
-  companyName: DefaultCompany
+  companyName: MixGuide
   productName: 4d-holographic-tutorials
   defaultCursor: {fileID: 0}
   cursorHotspot: {x: 0, y: 0}
@@ -131,7 +131,9 @@ PlayerSettings:
     16:9: 1
     Others: 1
   bundleVersion: 1.0
-  preloadedAssets: []
+  preloadedAssets:
+  - {fileID: -2071692475627779417, guid: 16406e83b1b416a458c6474aec1e44b2, type: 2}
+  - {fileID: 8553191836209244501, guid: 8810a952206202a428b650763f2247aa, type: 2}
   metroInputSource: 0
   wsaTransparentSwapchain: 0
   m_HolographicPauseOnTrackingLoss: 1
@@ -584,11 +586,11 @@ PlayerSettings:
   m_MobileRenderingPath: 1
   metroPackageName: 4d-holographic-tutorials
   metroPackageVersion: 1.0.0.0
-  metroCertificatePath: Assets\WSATestCertificate.pfx
-  metroCertificatePassword: 
-  metroCertificateSubject: Wenhao
-  metroCertificateIssuer: Wenhao
-  metroCertificateNotAfter: 806868ea717cd901
+  metroCertificatePath: Assets/WSATestCertificate.pfx
+  metroCertificatePassword: "au|m\x7F\x7F{c~h"
+  metroCertificateSubject: MixGuide
+  metroCertificateIssuer: MixGuide
+  metroCertificateNotAfter: 00097caf779edb01
   metroApplicationDescription: 4d-holographic-tutorials
   wsaImages: {}
   metroTileShortName: 4d-holographic-tutorials
