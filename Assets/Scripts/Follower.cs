@@ -9,7 +9,7 @@ namespace Tutorials
     {
         //[SerializeField]
         private Recorder _recorder;
-        //[SerializeField]
+        [SerializeField]
         private Player _player;
 
         private bool followMode = false;
@@ -21,8 +21,8 @@ namespace Tutorials
         public Follower() {}
         public void SetFollower(Player player, Recorder recorder)
         {
-            _recorder = recorder;
-            _player = player;
+            //_recorder = recorder;
+            //_player = player;
             TextMesh txt = debugger.GetComponent<TextMesh>();
             txt.text = "wtf";
         }
@@ -30,21 +30,24 @@ namespace Tutorials
         {
             //TextMesh txt = obj.GetComponent<TextMesh>();
             //txt.text = "PlayAnimation";
-            followMode = true;
-            //_player.StartFollowAnimation();
+            if (followMode)
+            {
+                timeKeeper += 0.3f;
+            }
+            else
+            {
+                followMode = true;
+                _player.StartFollowAnimation();
+            }
             //_recorder.StartRecording();
         }
         public void Update()
         {
             TextMesh txt = debugger.GetComponent<TextMesh>();
-            if (timeKeeper == 0)
-            {
-                timeKeeper = 2.0f;
-            }
             InputRecordingBuffer.Keyframe key;
             if (followMode)
             {
-                //txt.text = "follow mode on";
+                txt.text = "follow mode on, Time: ";
                 txt.text += timeKeeper.ToString();
                 //key = _recorder.getlatestkeyframe();
                 //idictionary<trackedhandjoint, transformdata> joints = _player.getanimationbytime(timekeeper);
@@ -62,12 +65,13 @@ namespace Tutorials
                 //    timekeeper += 0.1f;
                 //}
                 // Debug.Log(timeKeeper);
+                _player.setLocalTime(timeKeeper);
             } else
             {
                 txt.text = "Follow mode off";
             }
 
-            //_player.setLocalTime(timeKeeper);
+            
         }
 
     }
