@@ -131,9 +131,7 @@ PlayerSettings:
     16:9: 1
     Others: 1
   bundleVersion: 1.0
-  preloadedAssets:
-  - {fileID: -2071692475627779417, guid: 16406e83b1b416a458c6474aec1e44b2, type: 2}
-  - {fileID: 8553191836209244501, guid: 8810a952206202a428b650763f2247aa, type: 2}
+  preloadedAssets: []
   metroInputSource: 0
   wsaTransparentSwapchain: 0
   m_HolographicPauseOnTrackingLoss: 1
@@ -587,10 +585,10 @@ PlayerSettings:
   metroPackageName: 4d-holographic-tutorials
   metroPackageVersion: 1.0.0.0
   metroCertificatePath: Assets/WSATestCertificate.pfx
-  metroCertificatePassword: "au|m\x7F\x7F{c~h"
+  metroCertificatePassword: =
   metroCertificateSubject: MixGuide
   metroCertificateIssuer: MixGuide
-  metroCertificateNotAfter: 00097caf779edb01
+  metroCertificateNotAfter: 808058714aaedb01
   metroApplicationDescription: 4d-holographic-tutorials
   wsaImages: {}
   metroTileShortName: 4d-holographic-tutorials
