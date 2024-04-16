@@ -12,6 +12,9 @@ namespace Tutorials
         [SerializeField]
         private Player _player;
 
+        [SerializeField]
+        private LogToUIText _debugger;
+
         private bool followMode = false;
         private float timeKeeper = 0f;
 
@@ -23,13 +26,12 @@ namespace Tutorials
         {
             //_recorder = recorder;
             //_player = player;
-            TextMesh txt = debugger.GetComponent<TextMesh>();
-            txt.text = "wtf";
+            //TextMesh txt = debugger.GetComponent<TextMesh>();
+            //txt.text = "wtf";
         }
         public void playAnimation()
         {
-            //TextMesh txt = obj.GetComponent<TextMesh>();
-            //txt.text = "PlayAnimation";
+            _debugger.logInfo("Play Animation Called");
             if (followMode)
             {
                 timeKeeper += 0.3f;
@@ -43,12 +45,12 @@ namespace Tutorials
         }
         public void Update()
         {
-            TextMesh txt = debugger.GetComponent<TextMesh>();
+            //TextMesh txt = debugger.GetComponent<TextMesh>();
             InputRecordingBuffer.Keyframe key;
             if (followMode)
             {
-                txt.text = "follow mode on, Time: ";
-                txt.text += timeKeeper.ToString();
+                //txt.text = "follow mode on, Time: ";
+                //txt.text += timeKeeper.ToString();
                 //key = _recorder.getlatestkeyframe();
                 //idictionary<trackedhandjoint, transformdata> joints = _player.getanimationbytime(timekeeper);
                 //vector3 john = joints[trackedhandjoint.wrist].getposition();
@@ -68,7 +70,7 @@ namespace Tutorials
                 _player.setLocalTime(timeKeeper);
             } else
             {
-                txt.text = "Follow mode off";
+                //txt.text = "Follow mode off";
             }
 
             
