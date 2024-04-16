@@ -674,7 +674,7 @@ namespace Tutorials
             RecordingBuffer.RemoveBeforeTime(StartTime);
         }
 
-        public InputRecordingBuffer.Keyframe GetLatestKeyframe()
+        public InputRecordingBuffer.Keyframe GetLatestKeyFrame()
         {
             return RecordingBuffer.GetLatestKeyframe();
         }
