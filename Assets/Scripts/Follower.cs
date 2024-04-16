@@ -1,4 +1,6 @@
 using Microsoft.MixedReality.Toolkit.Utilities;
+using Microsoft.MixedReality.Toolkit.Input;
+using Microsoft.MixedReality.Toolkit;
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
@@ -7,7 +9,7 @@ namespace Tutorials
 {
     public class Follower : MonoBehaviour
     {
-        //[SerializeField]
+        [SerializeField]
         private Recorder _recorder;
         [SerializeField]
         private Player _player;
@@ -24,49 +26,41 @@ namespace Tutorials
         public Follower() {}
         public void SetFollower(Player player, Recorder recorder)
         {
-            //_recorder = recorder;
-            //_player = player;
-            //TextMesh txt = debugger.GetComponent<TextMesh>();
-            //txt.text = "wtf";
         }
         public void playAnimation()
         {
             _debugger.logInfo("Play Animation Called");
             if (followMode)
             {
-                timeKeeper += 0.3f;
+                if (timeKeeper > 20f)
+                {
+                    timeKeeper = 0f;
+                }
             }
             else
             {
                 followMode = true;
                 _player.StartFollowAnimation();
+                // _recorder.StartRecording();
             }
-            //_recorder.StartRecording();
         }
         public void Update()
         {
             //TextMesh txt = debugger.GetComponent<TextMesh>();
-            InputRecordingBuffer.Keyframe key;
+            // InputRecordingBuffer.Keyframe key;
+            _debugger.logInfo("Time: " + timeKeeper.ToString());
             if (followMode)
             {
-                //txt.text = "follow mode on, Time: ";
-                //txt.text += timeKeeper.ToString();
-                //key = _recorder.getlatestkeyframe();
-                //idictionary<trackedhandjoint, transformdata> joints = _player.getanimationbytime(timekeeper);
-                //vector3 john = joints[trackedhandjoint.wrist].getposition();
-                //vector3 vect = key.rightjoints[trackedhandjoint.wrist].position;
+                IDictionary<TrackedHandJoint, TransformData> joints = _player.GetAnimationByTime(timeKeeper);
+                Vector3 recordedHandPosition = joints[TrackedHandJoint.Wrist].GetPosition();
 
-                //float distance = vector3.distance(john, vect);
-                //debug.log(distance);
-                //if (timekeeper == 0)
-                //{
-                //    timekeeper = 5.0f;
-                //}
-                //if (distance < 0.20)
-                //{
-                //    timekeeper += 0.1f;
-                //}
-                // Debug.Log(timeKeeper);
+                Vector3 trackedHandPosition = GetCurrentWristPosition(Handedness.Right);
+                float distance = (trackedHandPosition - recordedHandPosition).magnitude;
+                _debugger.logInfo("Tracked pos: " + trackedHandPosition.ToString() + " Rec pos: " + recordedHandPosition.ToString() + " Dist: " + distance.ToString());
+                if (distance < 0.05f)
+                {
+                    timeKeeper += 0.03f;
+                }
                 _player.setLocalTime(timeKeeper);
             } else
             {
@@ -76,5 +70,28 @@ namespace Tutorials
             
         }
 
+        private Vector3 GetCurrentWristPosition(Handedness handedness)
+        {
+            var hand = HandJointUtils.FindHand(handedness);
+            if (hand == null)
+            {
+                _debugger.logError("Hand is null");
+                return new Vector3(0f, 0f, 0f);
+            }
+            if (hand.TrackingState != TrackingState.Tracked)
+            {
+                _debugger.logError("Hand not tracked");
+                return new Vector3(0f, 0f, 0f);
+            }
+            Transform jointTransform;
+            if (hand.TryGetJoint(TrackedHandJoint.Wrist, out MixedRealityPose jointPose))
+            {
+                return jointPose.Position;
+            } else
+            {
+                _debugger.logError("Could not get wrist joint");
+            }
+            return new Vector3(0f, 0f, 0f);
+        }
     }
 }
