@@ -35,6 +35,9 @@ namespace Tutorials
         [Tooltip("The point of reference that can be set for each animation specifically (will be stored in animation entity). Default is (0,0,0),(0,0,0,1)")]
         private Transform animationSpecificPointOfReference;
 
+        [SerializeField]
+        private LogToUIText _debugger;
+
         public TextMeshPro recordingCountdownText;
 
 
@@ -191,8 +194,10 @@ namespace Tutorials
 
                 try
                 {
+                    _debugger.logSucc("Success");
                     FileHandler.AnimationListInstance.OverwriteAnimationData(InputAnimation.FromRecordingBuffer(recordingBuffer), animationSpecificPointOfReference);
-                    FileHandler.SaveRecordingDataToJson(RecoringData.FromRecordingBuffer(recordingBuffer), filePath)
+                    FileHandler.SaveRecordingDataToJson(RecordingData.FromRecordingBuffer(recordingBuffer), FileHandler.GetJsonFileName());
+                    
                     DiscardRecordedInput();
                 }
                 catch (Exception e)

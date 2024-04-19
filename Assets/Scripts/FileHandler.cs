@@ -88,6 +88,19 @@ namespace Tutorials
 
         }
 
+        public static string GetJsonFileName()
+        {
+#if WINDOWS_UWP
+            var info = new EasClientDeviceInformation();
+            return String.Format("{0}.{1}.{2}.{3}", ANIMATIONFILE_PREFIX, info.Id, DateTime.UtcNow.ToString("yyyyMMdd-HHmmss"), InputAnimationSerializationUtils.Extension);
+#elif UNITY_EDITOR
+            return String.Format("{0}.{1}.{2}.{3}", ANIMATIONFILE_PREFIX, "unity_editor", DateTime.UtcNow.ToString("yyyyMMdd-HHmmss"), InputAnimationSerializationUtils.Ext_json);
+#else
+            return String.Format("{0}.{1}.{2}.{3}", ANIMATIONFILE_PREFIX, "unknown_platform", DateTime.UtcNow.ToString("yyyyMMdd-HHmmss"), InputAnimationSerializationUtils.Extension);
+#endif
+
+        }
+
         /// <summary>
         /// Returns the file path of a file in the recording directory when its name is passed as a parameter
         /// </summary>

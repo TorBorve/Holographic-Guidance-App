@@ -15,6 +15,7 @@ namespace Tutorials
         private static readonly int jointCount = Enum.GetNames(typeof(TrackedHandJoint)).Length;
 
         public const string Extension = "bin";
+        public const string Ext_json = "json";
 
         const long Magic = 0x6a8faf6e0f9e42c6;
 
