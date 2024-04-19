@@ -253,12 +253,10 @@ namespace Tutorials
 
             AnimationListInstance.CurrentAnimationChanged.Invoke();
         }
-        public static void SaveRecordingDataToJson(RecordingData input)
+        public static void SaveRecordingDataToJson(RecordingData input, string filePath)
         {
             try
             {
-                string filePath = FileHandler.GetFilePath(FileHandler.GetBlobFileName()) + ".json";
-
                 string jsonSer = JsonUtility.ToJson(input);
                 File.WriteAllText(filePath, jsonSer);
                 Debug.Log("JSON data has been successfully written to file: " + filePath);
