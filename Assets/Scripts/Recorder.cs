@@ -192,6 +192,7 @@ namespace Tutorials
                 try
                 {
                     FileHandler.AnimationListInstance.OverwriteAnimationData(InputAnimation.FromRecordingBuffer(recordingBuffer), animationSpecificPointOfReference);
+                    FileHandler.SaveRecordingDataToJson(RecoringData.FromRecordingBuffer(recordingBuffer), filePath)
                     DiscardRecordedInput();
                 }
                 catch (Exception e)

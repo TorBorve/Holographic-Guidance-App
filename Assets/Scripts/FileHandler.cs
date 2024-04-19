@@ -240,6 +240,33 @@ namespace Tutorials
 
             AnimationListInstance.CurrentAnimationChanged.Invoke();
         }
+        public static void SaveRecordingDataToJson(RecordingData input, string filePath)
+        {
+            try
+            {
+                string jsonSer = JsonUtility.ToJson(input);
+                File.WriteAllText(filePath, jsonSer);
+                Debug.Log("JSON data has been successfully written to file: " + filePath);
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogError("An error occurred: " + ex.Message);
+            }
+        }
+
+        public static void ReadRecordingDataFromJson(string filepath)
+        {
+            try
+            {
+                string jsonDe = File.ReadAllText(filepath);
+                RecordingData jsonSer = JsonUtility.FromJson<RecordingData>(jsonDe);
+                Debug.Log("JSON data has been successfully written to file: " + filepath);
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogError("An error occurred: " + ex.Message);
+            }
+        }
 
 
     }
