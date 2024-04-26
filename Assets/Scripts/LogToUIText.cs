@@ -11,12 +11,6 @@ namespace Tutorials
         [SerializeField]
         private GameObject textWindowObject;
 
-        [SerializeField]
-        private GameObject succTextWindowObject;
-
-        private string _succDisplayedMessage = "";
-        private bool _succLogHasChanged = false;
-
         private string _displayContent = "";
         private bool _logHasChanged = false;
 
@@ -46,15 +40,9 @@ namespace Tutorials
             _logHasChanged = true;
         }
 
-        public void logSucc(string logMsg)
-        {
-            _succDisplayedMessage += logMsg + "\n";
-            _succLogHasChanged = true;
-        }
-
         public void logSuccess(string logMsg)
         {
-            logSucc("[Success]: " + logMsg);
+            log("[Success]: " + logMsg);
         }
 
         void Update()
@@ -88,12 +76,6 @@ namespace Tutorials
                     txtWindow.ForceMeshUpdate();
                 }
                 _logHasChanged = false;
-            }
-            if (_succLogHasChanged)
-            {
-                TextMeshProUGUI txtSuccWindow = succTextWindowObject.GetComponent<TextMeshProUGUI>();
-                txtSuccWindow.text = _succDisplayedMessage; txtSuccWindow.ForceMeshUpdate();
-                _succLogHasChanged = false;
             }
         }
     }

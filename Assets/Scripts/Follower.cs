@@ -20,9 +20,6 @@ namespace Tutorials
         private bool followMode = false;
         private float timeKeeper = 0f;
 
-        [SerializeField]
-        private GameObject debugger;
-
         public Follower() {}
         public void SetFollower(Player player, Recorder recorder)
         {

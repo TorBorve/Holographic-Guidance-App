@@ -92,14 +92,14 @@ namespace Tutorials
         {
 #if WINDOWS_UWP
             var info = new EasClientDeviceInformation();
-            return String.Format("{0}.{1}.{2}.{3}", ANIMATIONFILE_PREFIX, info.Id, DateTime.UtcNow.ToString("yyyyMMdd-HHmmss"), InputAnimationSerializationUtils.Extension);
+            return String.Format("{0}.{1}.{2}.{3}", ANIMATIONFILE_PREFIX, info.Id, DateTime.UtcNow.ToString("yyyyMMdd-HHmmss"), InputAnimationSerializationUtils.Ext_json);
 #elif UNITY_EDITOR
             return String.Format("{0}.{1}.{2}.{3}", ANIMATIONFILE_PREFIX, "unity_editor", DateTime.UtcNow.ToString("yyyyMMdd-HHmmss"), InputAnimationSerializationUtils.Ext_json);
 #else
-            return String.Format("{0}.{1}.{2}.{3}", ANIMATIONFILE_PREFIX, "unknown_platform", DateTime.UtcNow.ToString("yyyyMMdd-HHmmss"), InputAnimationSerializationUtils.Extension);
+            return String.Format("{0}.{1}.{2}.{3}", ANIMATIONFILE_PREFIX, "unknown_platform", DateTime.UtcNow.ToString("yyyyMMdd-HHmmss"), InputAnimationSerializationUtils.Ext_json);
 #endif
 
-        }
+        } 
 
         /// <summary>
         /// Returns the file path of a file in the recording directory when its name is passed as a parameter
@@ -171,11 +171,21 @@ namespace Tutorials
 
             try
             {
-                byte[] blobFileBinary = await inputAnimation.ToBinary();
+                // change these lines to write into a string and then write it into the .txt
 
-                File.WriteAllBytes(GetFilePath(blobFileName), blobFileBinary);
+                StreamWriter writer = new StreamWriter(GetFilePath(blobFileName));
 
-                Debug.Log($"Recorded input animation exported to {GetFilePath(blobFileName)}");
+                await inputAnimation.ToStreamAsync(writer, aspor);
+
+                writer.Flush();
+
+                writer.Close();
+
+                // byte[] blobFileBinary = await inputAnimation.ToBinary();
+
+                // File.WriteAllBytes(GetFilePath(blobFileName), blobFileBinary);
+
+                // Debug.Log($"Recorded input animation exported to {GetFilePath(blobFileName)}");
 
                 AnimationListInstance.AnimationStoredLocally.Invoke();
             }
@@ -253,8 +263,10 @@ namespace Tutorials
 
             AnimationListInstance.CurrentAnimationChanged.Invoke();
         }
-        public static void SaveRecordingDataToJson(RecordingData input, string filePath)
+        public static void SaveRecordingDataToJson(RecordingData input)
         {
+            string filePath = FileHandler.GetJsonFileName();
+
             try
             {
                 string jsonSer = JsonUtility.ToJson(input);
