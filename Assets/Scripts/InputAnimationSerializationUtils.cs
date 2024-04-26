@@ -14,7 +14,7 @@ namespace Tutorials
     {
         private static readonly int jointCount = Enum.GetNames(typeof(TrackedHandJoint)).Length;
 
-        public const string Extension = "bin";
+        public const string Extension = "txt";
 
         const long Magic = 0x6a8faf6e0f9e42c6;
 
@@ -41,18 +41,18 @@ namespace Tutorials
         /// <summary>
         /// Write a header for the input animation file format into the stream.
         /// </summary>
-        public static void WriteHeader(BinaryWriter writer)
+        public static void WriteHeader(StreamWriter writer)
         {
-            writer.Write(Magic);
+            writer.WriteLine(Magic);
         }
 
         /// <summary>
         /// Write a header for the input animation file format into the stream.
         /// </summary>
-        public static void ReadHeader(BinaryReader reader)
+        public static void ReadHeader(StreamReader reader)
         {
-            long fileMagic = reader.ReadInt64();
-            if (fileMagic != Magic)
+            long fileMagic;
+            if (!long.TryParse(reader.ReadLine(), out fileMagic) || fileMagic != Magic)
             {
                 throw new Exception("File is not an input animation file");
             }
@@ -61,7 +61,7 @@ namespace Tutorials
         /// <summary>
         /// Serialize an animation curve with tangents as binary data.
         /// </summary>
-        public static void WriteFloatCurve(BinaryWriter writer, AnimationCurve curve, float startTime)
+        public static void WriteFloatCurve(StreamWriter writer, AnimationCurve curve, float startTime)
         {
             writer.Write((int)curve.preWrapMode);
             writer.Write((int)curve.postWrapMode);
@@ -83,23 +83,23 @@ namespace Tutorials
         /// <summary>
         /// Deserialize an animation curve with tangents from binary data.
         /// </summary>
-        public static void ReadFloatCurve(BinaryReader reader, AnimationCurve curve)
+        public static void ReadFloatCurve(StreamReader reader, AnimationCurve curve)
         {
-            curve.preWrapMode = (WrapMode)reader.ReadInt32();
-            curve.postWrapMode = (WrapMode)reader.ReadInt32();
+            curve.preWrapMode = (WrapMode)int.Parse(reader.ReadLine());
+            curve.postWrapMode = (WrapMode)int.Parse(reader.ReadLine());
 
-            int keyframeCount = reader.ReadInt32();
+            int keyframeCount = int.Parse(reader.ReadLine());
 
             Keyframe[] keys = new Keyframe[keyframeCount];
             for (int i = 0; i < keyframeCount; ++i)
             {
-                keys[i].time = reader.ReadSingle();
-                keys[i].value = reader.ReadSingle();
-                keys[i].inTangent = reader.ReadSingle();
-                keys[i].outTangent = reader.ReadSingle();
-                keys[i].inWeight = reader.ReadSingle();
-                keys[i].outWeight = reader.ReadSingle();
-                keys[i].weightedMode = (WeightedMode)reader.ReadInt32();
+                keys[i].time = float.Parse(reader.ReadLine());
+                keys[i].value = float.Parse(reader.ReadLine());
+                keys[i].inTangent = float.Parse(reader.ReadLine());
+                keys[i].outTangent = float.Parse(reader.ReadLine());
+                keys[i].inWeight = float.Parse(reader.ReadLine());
+                keys[i].outWeight = float.Parse(reader.ReadLine());
+                keys[i].weightedMode = (WeightedMode)int.Parse(reader.ReadLine());
             }
 
             curve.keys = keys;
@@ -108,35 +108,35 @@ namespace Tutorials
         /// <summary>
         /// Serialize an animation curve as binary data, ignoring tangents.
         /// </summary>
-        public static void WriteBoolCurve(BinaryWriter writer, AnimationCurve curve)
+        public static void WriteBoolCurve(StreamWriter writer, AnimationCurve curve)
         {
-            writer.Write((int)curve.preWrapMode);
-            writer.Write((int)curve.postWrapMode);
+            writer.WriteLine((int)curve.preWrapMode);
+            writer.WriteLine((int)curve.postWrapMode);
 
-            writer.Write(curve.length);
+            writer.WriteLine(curve.length);
             for (int i = 0; i < curve.length; ++i)
             {
                 var keyframe = curve.keys[i];
-                writer.Write(keyframe.time);
-                writer.Write(keyframe.value);
+                writer.WriteLine(keyframe.time);
+                writer.WriteLine(keyframe.value);
             }
         }
 
         /// <summary>
         /// Deserialize an animation curve from binary data, ignoring tangents.
         /// </summary>
-        public static void ReadBoolCurve(BinaryReader reader, AnimationCurve curve)
+        public static void ReadBoolCurve(StreamReader reader, AnimationCurve curve)
         {
-            curve.preWrapMode = (WrapMode)reader.ReadInt32();
-            curve.postWrapMode = (WrapMode)reader.ReadInt32();
+            curve.preWrapMode = (WrapMode)int.Parse(reader.ReadLine());
+            curve.postWrapMode = (WrapMode)int.Parse(reader.ReadLine());
 
-            int keyframeCount = reader.ReadInt32();
+            int keyframeCount = int.Parse(reader.ReadLine());
 
             Keyframe[] keys = new Keyframe[keyframeCount];
             for (int i = 0; i < keyframeCount; ++i)
             {
-                keys[i].time = reader.ReadSingle();
-                keys[i].value = reader.ReadSingle();
+                keys[i].time = float.Parse(reader.ReadLine());
+                keys[i].value = float.Parse(reader.ReadLine());
                 keys[i].outWeight = 1.0e6f;
                 keys[i].weightedMode = WeightedMode.Both;
             }
@@ -147,17 +147,17 @@ namespace Tutorials
         /// <summary>
         /// Serialize an animation curve with tangents as binary data. Only encodes keyframe position and time.
         /// </summary>
-        public static void WriteFloatCurveSimple(BinaryWriter writer, AnimationCurve curve)
+        public static void WriteFloatCurveSimple(StreamWriter writer, AnimationCurve curve)
         {
-            writer.Write((int)curve.preWrapMode);
-            writer.Write((int)curve.postWrapMode);
+            writer.WriteLine((int)curve.preWrapMode);
+            writer.WriteLine((int)curve.postWrapMode);
 
-            writer.Write(curve.length);
+            writer.WriteLine(curve.length);
             for (int i = 0; i < curve.length; ++i)
             {
                 var keyframe = curve.keys[i];
-                writer.Write(keyframe.time);
-                writer.Write(keyframe.value);
+                writer.WriteLine(keyframe.time);
+                writer.WriteLine(keyframe.value);
             }
         }
 
@@ -165,28 +165,29 @@ namespace Tutorials
         /// Deserialize an animation curve with tangents from binary data. Only decodes keyframe position and time.
         /// </summary>
         /// <remarks>Only use for curves serialized using WriteFloatCurvesSimple</remarks>
-        public static void ReadFloatCurveSimple(BinaryReader reader, AnimationCurve curve)
+        public static void ReadFloatCurveSimple(StreamReader reader, AnimationCurve curve)
         {
-            curve.preWrapMode = (WrapMode)reader.ReadInt32();
-            curve.postWrapMode = (WrapMode)reader.ReadInt32();
-
-            int keyframeCount = reader.ReadInt32();
-
+            if (curve == null)
+            {
+                Debug.LogError("ReadFloatCurveSimple got null curve!");
+            }
+            curve.preWrapMode = (WrapMode)int.Parse(reader.ReadLine());
+            curve.postWrapMode = (WrapMode)int.Parse(reader.ReadLine());
+            int keyframeCount = int.Parse(reader.ReadLine());
             Keyframe[] keys = new Keyframe[keyframeCount];
             for (int i = 0; i < keyframeCount; ++i)
             {
-                keys[i].time = reader.ReadSingle();
-                keys[i].value = reader.ReadSingle();
+                keys[i].time = float.Parse(reader.ReadLine());
+                keys[i].value = float.Parse(reader.ReadLine());
                 keys[i].weightedMode = WeightedMode.Both;
             }
-
             curve.keys = keys;
         }
 
         /// <summary>
         /// Serialize an array of animation curves with tangents as binary data.
         /// </summary>
-        public static void WriteFloatCurveArray(BinaryWriter writer, AnimationCurve[] curves, float startTime)
+        public static void WriteFloatCurveArray(StreamWriter writer, AnimationCurve[] curves, float startTime)
         {
             foreach (AnimationCurve curve in curves)
             {
@@ -197,7 +198,7 @@ namespace Tutorials
         /// <summary>
         /// Deserialize an array of animation curves with tangents from binary data.
         /// </summary>
-        public static void ReadFloatCurveArray(BinaryReader reader, AnimationCurve[] curves)
+        public static void ReadFloatCurveArray(StreamReader reader, AnimationCurve[] curves)
         {
             foreach (AnimationCurve curve in curves)
             {
@@ -208,7 +209,7 @@ namespace Tutorials
         /// <summary>
         /// Serialize an array of animation curves as binary data, ignoring tangents.
         /// </summary>
-        public static void WriteBoolCurveArray(BinaryWriter writer, AnimationCurve[] curves)
+        public static void WriteBoolCurveArray(StreamWriter writer, AnimationCurve[] curves)
         {
             foreach (AnimationCurve curve in curves)
             {
@@ -219,7 +220,7 @@ namespace Tutorials
         /// <summary>
         /// Deserialize an array of animation curves from binary data, ignoring tangents.
         /// </summary>
-        public static void ReadBoolCurveArray(BinaryReader reader, AnimationCurve[] curves)
+        public static void ReadBoolCurveArray(StreamReader reader, AnimationCurve[] curves)
         {
             foreach (AnimationCurve curve in curves)
             {
@@ -230,29 +231,35 @@ namespace Tutorials
         /// <summary>
         /// Serialize a list of markers.
         /// </summary>
-        public static void WriteMarkerList(BinaryWriter writer, List<InputAnimationMarker> markers)
+        public static void WriteMarkerList(StreamWriter writer, List<InputAnimationMarker> markers)
         {
-            writer.Write(markers.Count);
+            writer.WriteLine("MARKER_LIST");
+            writer.WriteLine(markers.Count);
             foreach (var marker in markers)
             {
-                writer.Write(marker.time);
-                writer.Write(marker.name);
+                writer.WriteLine(marker.time);
+                writer.WriteLine(marker.name);
             }
         }
 
         /// <summary>
         /// Deserialize a list of markers.
         /// </summary>
-        public static void ReadMarkerList(BinaryReader reader, List<InputAnimationMarker> markers)
+        public static void ReadMarkerList(StreamReader reader, List<InputAnimationMarker> markers)
         {
             markers.Clear();
-            int count = reader.ReadInt32();
+            var header = reader.ReadLine();
+            if (header != "MARKER_LIST")
+            {
+                Debug.LogError("Excepted MARKER_LIST header, got: " + header);
+            }
+            int count = int.Parse(reader.ReadLine());
             markers.Capacity = count;
             for (int i = 0; i < count; ++i)
             {
                 var marker = new InputAnimationMarker();
-                marker.time = reader.ReadSingle();
-                marker.name = reader.ReadString();
+                marker.time = float.Parse(reader.ReadLine());
+                marker.name = reader.ReadLine();
                 markers.Add(marker);
             }
         }
