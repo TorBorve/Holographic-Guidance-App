@@ -12,14 +12,15 @@ using Windows.Security.ExchangeActiveSyncProvisioning;
 
 namespace Tutorials
 {
-
     /// <summary>
     /// Static class that provides logic for handling files and the current state of the loaded animations in the editor through its field AnimationListInstance, which exists only once in this context and can be accessed by any other class in this namespace.
     /// </summary>
     public static class FileHandler
     {
-        private static string RECORDINGS_DIRECTORY = "Recordings";
-        private static string ANIMATIONFILE_PREFIX = "HandAnimation";
+        public static string PERSISTENT_DATA_PATH = Application.persistentDataPath;
+        public static string DATA_PATH = "";
+        public static string RECORDINGS_DIRECTORY = "Recordings";
+        public static string ANIMATIONFILE_PREFIX = "HandAnimation";
         private static string DATAFILE_NAME = "datafile.xml";
 
 
@@ -62,7 +63,7 @@ namespace Tutorials
         /// </summary>
         public static void CreateDirectory()
         {
-            string path = Path.Combine(Application.persistentDataPath, RECORDINGS_DIRECTORY);
+            string path = Path.Combine(PERSISTENT_DATA_PATH, RECORDINGS_DIRECTORY);
 
             if (!Directory.Exists(path))
             {
@@ -108,7 +109,7 @@ namespace Tutorials
         /// <returns>The complete file system path to the file</returns>
         public static string GetFilePath(string fileName)
         {
-            return Path.Combine(Application.persistentDataPath, RECORDINGS_DIRECTORY, fileName);
+            return Path.Combine(PERSISTENT_DATA_PATH, RECORDINGS_DIRECTORY, fileName);
         }
 
         /// <summary>
@@ -119,7 +120,12 @@ namespace Tutorials
         public static bool CheckIfBlobFileExistsLocally(string blobFileName)
         {
             if (blobFileName == null) return false;
-            return File.Exists(Path.Combine(Application.persistentDataPath, RECORDINGS_DIRECTORY, blobFileName));
+            return File.Exists(Path.Combine(PERSISTENT_DATA_PATH, RECORDINGS_DIRECTORY, blobFileName));
+        }
+        public static bool CheckIfTXTFileExistsLocally(string FileName)
+        {
+            if (FileName == null) return false;
+            return File.Exists(FileName);
         }
 
         /// <summary>
@@ -133,7 +139,33 @@ namespace Tutorials
 
             if (blobFileName != null && blobFileName.Length > 0)
             {
-                string combinedPath = Path.Combine(Application.persistentDataPath, RECORDINGS_DIRECTORY, blobFileName);
+                string combinedPath = Path.Combine(PERSISTENT_DATA_PATH, RECORDINGS_DIRECTORY, blobFileName);
+
+                try
+                {
+                    using (FileStream fs = new FileStream(combinedPath, FileMode.Open))
+                    {
+                        InputAnimation inputAnimation = new InputAnimation();
+                        inputAnimation = InputAnimation.FromStream(fs);
+
+                        return inputAnimation;
+                    }
+                }
+                catch (IOException ex)
+                {
+                    Debug.LogError(ex.Message);
+                }
+            }
+            return null;
+        }
+
+        public static InputAnimation LoadAnimationFromTXTFile(string blobFileName)
+        {
+            if (!CheckIfTXTFileExistsLocally(blobFileName)) return null;
+
+            if (blobFileName != null && blobFileName.Length > 0)
+            {
+                string combinedPath = blobFileName;
 
                 try
                 {
@@ -159,7 +191,7 @@ namespace Tutorials
         /// </summary>
         /// <param name="inputAnimation">The input animation to be saved</param>
         /// <param name="blobFileName">Name of the blob file.</param>
-        public static async void StoreBlobFileLocally(InputAnimation inputAnimation, string blobFileName)
+        public static async void StoreBlobFileLocally(InputAnimation inputAnimation, string blobFileName, TransformData aspor = null)
         {
             if (inputAnimation == null)
             {
@@ -171,14 +203,9 @@ namespace Tutorials
 
             try
             {
-                // change these lines to write into a string and then write it into the .txt
-
                 StreamWriter writer = new StreamWriter(GetFilePath(blobFileName));
-
                 await inputAnimation.ToStreamAsync(writer, aspor);
-
                 writer.Flush();
-
                 writer.Close();
 
                 // byte[] blobFileBinary = await inputAnimation.ToBinary();
@@ -215,7 +242,7 @@ namespace Tutorials
 
             AnimationListInstance.CopyLinkedListToArray();
 
-            string path = Path.Combine(Application.persistentDataPath, RECORDINGS_DIRECTORY, DATAFILE_NAME);
+            string path = Path.Combine(PERSISTENT_DATA_PATH, RECORDINGS_DIRECTORY, DATAFILE_NAME);
 
             try
             {
@@ -238,7 +265,7 @@ namespace Tutorials
         /// </summary>
         public static void LoadAnimationList()
         {
-            string path = Path.Combine(Application.persistentDataPath, RECORDINGS_DIRECTORY, DATAFILE_NAME);
+            string path = Path.Combine(PERSISTENT_DATA_PATH, RECORDINGS_DIRECTORY, DATAFILE_NAME);
 
             // if datafile.xml doesn't exist yet, a new (empty) animation list will be instatiated and save to the recordings directory
             if (!File.Exists(path))
