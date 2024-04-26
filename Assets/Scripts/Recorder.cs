@@ -35,6 +35,9 @@ namespace Tutorials
         [Tooltip("The point of reference that can be set for each animation specifically (will be stored in animation entity). Default is (0,0,0),(0,0,0,1)")]
         private Transform animationSpecificPointOfReference;
 
+        [SerializeField]
+        private LogToUIText _debugger;
+
         public TextMeshPro recordingCountdownText;
 
 
@@ -145,6 +148,7 @@ namespace Tutorials
         public void StartRecording()
         {
             IsRecording = true;
+            _debugger.logSuccess("recording started");
 
             eyeGazeProvider = CoreServices.InputSystem.EyeGazeProvider;
 
@@ -191,7 +195,24 @@ namespace Tutorials
 
                 try
                 {
+                    _debugger.logSuccess("saving recorded input");
                     FileHandler.AnimationListInstance.OverwriteAnimationData(InputAnimation.FromRecordingBuffer(recordingBuffer), animationSpecificPointOfReference);
+                    _debugger.logSuccess(".bin file saved");
+                    //FileHandler.SaveRecordingDataToJson(RecordingData.FromRecordingBuffer(recordingBuffer));
+                    string filePath = FileHandler.GetJsonFileName();
+
+                    try
+                    {
+                        string jsonSer = JsonUtility.ToJson(RecordingData.FromRecordingBuffer(recordingBuffer));
+                        File.WriteAllText(filePath, jsonSer);
+                        _debugger.log("JSON data has been successfully written to file: " + filePath);
+                        _debugger.logSuccess(".json file saved");
+                    }
+                    catch (System.Exception ex)
+                    {
+                        _debugger.logError("An error occurred: " + ex.Message);
+                    }
+
                     DiscardRecordedInput();
                 }
                 catch (Exception e)

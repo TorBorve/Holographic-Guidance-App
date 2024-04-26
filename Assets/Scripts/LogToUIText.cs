@@ -40,6 +40,11 @@ namespace Tutorials
             _logHasChanged = true;
         }
 
+        public void logSuccess(string logMsg)
+        {
+            log("[Success]: " + logMsg);
+        }
+
         void Update()
         {
             if (_logHasChanged)
