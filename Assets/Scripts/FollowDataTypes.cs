@@ -28,6 +28,62 @@ namespace Tutorials
             rightHand = new Dictionary<TrackedHandJoint, MixedRealityPose>();
         }
 
+        public static DataPoint Interpolate(DataPoint firstDataPoint, DataPoint secondDataPoint, float alpha)
+        {
+            DataPoint interpolatedDataPoint = new DataPoint(firstDataPoint.timeStamp + alpha * (secondDataPoint.timeStamp - firstDataPoint.timeStamp));
+
+            if (!firstDataPoint.leftIsTracked)
+            {
+                interpolatedDataPoint.leftHand = secondDataPoint.leftHand;
+                interpolatedDataPoint.leftIsTracked = secondDataPoint.leftIsTracked;
+            } else if (!secondDataPoint.leftIsTracked)
+            {
+                interpolatedDataPoint.leftHand = firstDataPoint.leftHand;
+                interpolatedDataPoint.leftIsTracked = firstDataPoint.leftIsTracked;
+            } else
+            {
+                interpolatedDataPoint.leftIsTracked = true;
+                interpolatedDataPoint.leftHand = InterpolateJoints(firstDataPoint.leftHand, secondDataPoint.leftHand, alpha);
+            }
+
+            if (!firstDataPoint.rightIsTracked)
+            {
+                interpolatedDataPoint.rightHand = secondDataPoint.rightHand;
+                interpolatedDataPoint.rightIsTracked = secondDataPoint.rightIsTracked;
+            } else if (!secondDataPoint.rightIsTracked)
+            {
+                interpolatedDataPoint.rightHand = firstDataPoint.rightHand;
+                interpolatedDataPoint.rightIsTracked = firstDataPoint.rightIsTracked;
+            } else
+            {
+                interpolatedDataPoint.rightIsTracked = true;
+                interpolatedDataPoint.rightHand = InterpolateJoints(firstDataPoint.rightHand, secondDataPoint.rightHand, alpha);
+            }
+            return interpolatedDataPoint;          
+        }
+
+        private static Dictionary<TrackedHandJoint, MixedRealityPose> InterpolateJoints(Dictionary<TrackedHandJoint, MixedRealityPose> firstJoints, Dictionary<TrackedHandJoint, MixedRealityPose> secondJoints, float alpha)
+        {
+            var result = new Dictionary<TrackedHandJoint, MixedRealityPose>();
+            int num_joints = Enum.GetNames(typeof(TrackedHandJoint)).Length;
+            for (int i = 1; i < num_joints; ++i)
+            {
+                var firstPose = firstJoints[(TrackedHandJoint)i];
+                var secondPose = secondJoints[(TrackedHandJoint)i];
+                var resPose = InterpolatePose(firstPose, secondPose, alpha);
+                result.Add((TrackedHandJoint)i, resPose);
+            }
+            return result;
+        }
+
+        private static MixedRealityPose InterpolatePose(MixedRealityPose firstPose, MixedRealityPose secondPose, float alpha)
+        {
+            var resQuat = Quaternion.Slerp(firstPose.Rotation, secondPose.Rotation, alpha);
+            var resPos = firstPose.Position + alpha * (secondPose.Position - firstPose.Position);
+            var result = new MixedRealityPose(resPos, resQuat);
+            return result;
+        }
+
         public static DataPoint FromKeyframe(InputRecordingBuffer.Keyframe keyframe)
         {
             DataPoint dataPoint = new DataPoint(keyframe.Time);
@@ -85,9 +141,52 @@ namespace Tutorials
             return dataPoints.Count();
         }
 
+        private int ClosestIndex(float queryTime)
+        {
+            if (dataPoints.Count() == 0)
+            {
+                throw new Exception("DataPoints is empty");
+            }
+            int first = 0;
+            int last = dataPoints.Count() - 1;
+            int mid = 0;
+            do
+            {
+                mid = first + (last - first) / 2;
+                if (queryTime > dataPoints[mid].timeStamp)
+                {
+                    first = mid + 1;
+                } else
+                {
+                    last = mid - 1;
+                }
+                if (queryTime == dataPoints[mid].timeStamp)
+                {
+                    return mid;
+                }
+            } while (first <= last);
+            return mid;
+        }
+
         public DataPoint InterpolateDataAtTime(float time)
         {
-            throw new Exception("Not Implemented");
+            int secondIndex = ClosestIndex(time);
+            if (secondIndex == 0)
+            {
+                return dataPoints[0];
+            }
+            int firstIndex = secondIndex - 1;
+
+            float firstTime = dataPoints[firstIndex].timeStamp;
+            float secondTime = dataPoints[secondIndex].timeStamp;
+            if (firstTime == secondTime)
+            {
+                return dataPoints[firstIndex];
+            }
+
+            float alpha = (time - firstTime) / (secondTime - firstTime);
+            DataPoint interpolatedPoint = DataPoint.Interpolate(dataPoints[firstIndex], dataPoints[secondIndex], alpha);
+            return interpolatedPoint;
         }
 
         public static async Task<RecordingData> FromInputAnimationAsync(InputAnimation inputAnimation)
