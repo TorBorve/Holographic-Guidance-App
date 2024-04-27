@@ -131,6 +131,29 @@ namespace Tutorials
             dataPoints.Add(dataPoint);
         }
 
+        public float GetEndTime()
+        {
+            if (dataPoints.Count() == 0)
+            {
+                return 0f;
+            }
+            return dataPoints[dataPoints.Count() - 1].timeStamp;
+        }
+
+        public float GetStartTime()
+        {
+            if (dataPoints.Count() == 0)
+            {
+                return 0f;
+            }
+            return dataPoints[0].timeStamp;
+        }
+
+        public float GetDuration()
+        {
+            return GetEndTime() - GetStartTime();
+        }
+
         public DataPoint GetDataPointIndex(int i)
         {
             return dataPoints[i];
@@ -182,6 +205,12 @@ namespace Tutorials
             if (firstTime == secondTime)
             {
                 return dataPoints[firstIndex];
+            } else if (firstTime >= time)
+            {
+                return dataPoints[firstIndex];
+            } else if (secondTime <= time)
+            {
+                return dataPoints[secondIndex];
             }
 
             float alpha = (time - firstTime) / (secondTime - firstTime);
