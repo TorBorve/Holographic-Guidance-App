@@ -348,9 +348,9 @@ namespace Tutorials
         [SerializeField]
         private AnimationCurve handGripCurveRight;*/
         [SerializeField]
-        private Dictionary<TrackedHandJoint, PoseCurves> handJointCurvesLeft;
+        public  Dictionary<TrackedHandJoint, PoseCurves> handJointCurvesLeft;// { get; private set; }
         [SerializeField]
-        private Dictionary<TrackedHandJoint, PoseCurves> handJointCurvesRight;
+        public Dictionary<TrackedHandJoint, PoseCurves> handJointCurvesRight; // { get; private set; }
         [SerializeField]
         private PoseCurves cameraCurves;
         [SerializeField]
@@ -897,7 +897,6 @@ namespace Tutorials
                 //animation.qrCoordinate = new MixedRealityPose(qrPosition, qrRotation);
                 // aspor is not used currently
             }
-
             header = reader.ReadLine();
             if (header != "HEAD_POSES")
             {
@@ -914,7 +913,7 @@ namespace Tutorials
                 Debug.LogError("Excepted LEFT_HAND_POSES header, got: " + header);
             } else
             {
-                var curves = CurvesFromStream(reader, 1 + PoseCurves.CURVE_COUNT * (jointCount - 1));
+                var curves = CurvesFromStream(reader, 2 + PoseCurves.CURVE_COUNT * (jointCount - 1));
                 //animation.handGripCurveLeft = curves[0];
                 animation.handPinchCurveLeft = curves[0];
                 animation.handTrackedCurveLeft = curves[1];
@@ -931,7 +930,6 @@ namespace Tutorials
                     animation.handJointCurvesLeft.Add((TrackedHandJoint)i, poseCurve);
                 }
             }
-
             header = reader.ReadLine();
             if (header != "RIGHT_HAND_POSES")
             {
