@@ -170,6 +170,11 @@ namespace Tutorials
         /// </summary>
         public InputRecordingBuffer() => keyframes = new Queue<Keyframe>();
 
+        public bool Empty()
+        {
+            return keyframes.Count == 0;
+        }
+
         /// <summary>
         /// Removes all keyframes from the buffer
         /// </summary>
