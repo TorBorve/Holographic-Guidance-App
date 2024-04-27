@@ -40,7 +40,7 @@ namespace Tutorials
         /// <summary>
         /// The actual animation that is being replayed 
         /// </summary>
-        private new InputAnimation animation;
+        public new InputAnimation animation;
 
         [SerializeField]
         private Transform animationSpecificPointOfReference;
