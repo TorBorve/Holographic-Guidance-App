@@ -45,6 +45,9 @@ namespace Tutorials
         [SerializeField]
         private Interactable objectManagerButton;
 
+        [SerializeField]
+        private Interactable guidanceButton;
+
         public TextMeshPro recordingCountdownText;
 
         private string countdownText = "";
@@ -391,11 +394,10 @@ namespace Tutorials
             }
         }
 
-        public void startFollow()
+        public void GuidanceButton()
         {
-            follower.SetFollower(player, recorder);
+            player.setGuidanceMode(guidanceButton.IsToggled);
             follower.playAnimation();
-
         }
 
         /// <summary>
