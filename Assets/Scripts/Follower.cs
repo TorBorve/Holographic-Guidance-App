@@ -32,8 +32,8 @@ namespace Tutorials
         }
         public void playAnimation()
         {
-            _debugger.logInfo("Play Animation Called");
-            _debugger.logInfo(FileHandler.PERSISTENT_DATA_PATH);
+            Debug.Log("Play Animation Called");
+            Debug.Log(FileHandler.PERSISTENT_DATA_PATH);
             if (followMode)
             {
                 if (timeKeeper > 20f)
@@ -44,14 +44,16 @@ namespace Tutorials
             else
             {
                 followMode = true;
-                _player.StartFollowAnimation();
+                //_player.StartFollowAnimation();
                 InputAnimation inputAnimation = _player.animation;
                 Task<RecordingData> recordingDataTask = RecordingData.FromInputAnimationAsync(inputAnimation);
                 recordingDataTask.Wait();
                 _recordingData = recordingDataTask.Result;
-                _debugger.logInfo("Got recording data. Num datapoints: " + _recordingData.Count().ToString());
-                Vector3 pos = _recordingData.GetDataPointIndex(0).rightHand[TrackedHandJoint.Wrist].Position;
-                _debugger.logInfo("Pos wrist t=0: " + pos.ToString());
+                Debug.Log("Got recording data. Num datapoints: " + _recordingData.Count().ToString());
+                float scale = 10000;
+                Vector3 pos0 = scale*_recordingData.GetDataPointIndex(0).leftHand[TrackedHandJoint.Wrist].Position;
+                Vector3 pos1 = scale*_recordingData.GetDataPointIndex(0).leftHand[TrackedHandJoint.ThumbTip].Position;
+                Debug.Log("Wrist: " + pos0.ToString() + " Tumb: " + pos1.ToString());
 
                 // _recorder.StartRecording();
             }
@@ -60,7 +62,7 @@ namespace Tutorials
         {
             //TextMesh txt = debugger.GetComponent<TextMesh>();
             // InputRecordingBuffer.Keyframe key;
-            //_debugger.logInfo("Time: " + timeKeeper.ToString());
+            //_debugger.Log("Time: " + timeKeeper.ToString());
             if (followMode)
             {
                 IDictionary<TrackedHandJoint, TransformData> joints = _player.GetAnimationByTime(timeKeeper);
@@ -68,12 +70,12 @@ namespace Tutorials
 
                 Vector3 trackedHandPosition = GetCurrentWristPosition(Handedness.Right);
                 float distance = (trackedHandPosition - recordedHandPosition).magnitude;
-                //_debugger.logInfo("Tracked pos: " + trackedHandPosition.ToString() + " Rec pos: " + recordedHandPosition.ToString() + " Dist: " + distance.ToString());
+                //_debugger.Log("Tracked pos: " + trackedHandPosition.ToString() + " Rec pos: " + recordedHandPosition.ToString() + " Dist: " + distance.ToString());
                 if (distance < 0.05f)
                 {
                     timeKeeper += 0.03f;
                 }
-                _player.setLocalTime(timeKeeper);
+                // _player.setLocalTime(timeKeeper);
             } else
             {
                 //txt.text = "Follow mode off";
