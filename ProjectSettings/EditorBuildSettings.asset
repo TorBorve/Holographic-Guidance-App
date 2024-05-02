@@ -8,6 +8,9 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/4DTutorialScene.unity
     guid: 22d2b062c9351e740a165eb700eda44c
+  - enabled: 0
+    path: Assets/Samples/Mixed Reality Toolkit Examples/2.7.3/Demos - Input/Scenes/InputData/InputDataExample.unity
+    guid: 65969a02ef16ad647a97e884613dc32a
   m_configObjects:
     Unity.XR.WindowsMR.Settings: {fileID: 11400000, guid: 16406e83b1b416a458c6474aec1e44b2,
       type: 2}

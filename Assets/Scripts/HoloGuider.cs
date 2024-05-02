@@ -108,10 +108,12 @@ namespace Tutorials
 
         private float FollowingUpdate()
         {
-            { 
+            {
+                var handInput = new Tuple<InputSourceType, Handedness>(InputSourceType.Controller, Handedness.Right);
                 DataPoint currentDataPoint = _recordingData.InterpolateDataAtTime(_estimatedTime);
                 if (_rightHand != null && _rightHand.TryGetJoint(TrackedHandJoint.Palm, out MixedRealityPose palmPose))
                 {
+                    _debugger.logInfo(handInput.ToString());
                     _debugger.logInfo("t palm: " + (1000 * palmPose.Position).ToString());
                 }
                 if (_rightHand != null && _rightHand.TryGetJoint(TrackedHandJoint.ThumbTip, out MixedRealityPose thumbPose))
@@ -150,7 +152,7 @@ namespace Tutorials
                 // Sigmoid for smoth acceleration, alpha = 1 => max_acceleration, alpha = 0 => max_decelleration
                 float alpha = (float)(1 - 1 / (1 + Math.Exp(-20 * (dist - 0.30f))));
                 float acceleration = MIN_ACCELERATION + alpha * (MAX_ACCELERATION - MIN_ACCELERATION);
-                //_debugger.logInfo("Acc: " + acceleration.ToString());
+                // _debugger.logInfo("Acc: " + acceleration.ToString());
                 _guidanceSpeed += Time.deltaTime * acceleration;
                 _guidanceSpeed = Math.Max(0, Math.Min(_guidanceSpeed, MAX_GUIDANCE_SPEED));
                 updatedEstimatedTime += _guidanceSpeed * Time.deltaTime;
