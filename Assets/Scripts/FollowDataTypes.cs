@@ -105,6 +105,101 @@ namespace Tutorials
             }
             return MRPoseDict;
         }
+
+        public static MixedRealityPose ToGlobalFrame(DataPoint localDP)
+        {
+            DataPoint globalDP = new DataPoint(localDP.timeStamp);
+
+            // Left
+            //leftJoints[TrackedHandJoint.ThumbMetacarpalJoint] = thumbRoot;
+            //leftJoints[TrackedHandJoint.ThumbProximalJoint] = RetrieveChild(TrackedHandJoint.ThumbMetacarpalJoint, Handedness.Left);
+            //leftJoints[TrackedHandJoint.ThumbDistalJoint] = RetrieveChild(TrackedHandJoint.ThumbProximalJoint, Handedness.Left);
+            //leftJoints[TrackedHandJoint.ThumbTip] = RetrieveChild(TrackedHandJoint.ThumbDistalJoint, Handedness.Left);
+
+            MixedRealityPose wristPose = localDP.rightHand[TrackedHandJoint.Wrist];
+            wristPose.Rotation = wristPose.Rotation * Recorder.RecordingFrameInverse(Handedness.Right);
+
+            MixedRealityPose thumbPose = new MixedRealityPose(wristPose.Position, wristPose.Rotation);
+            MixedRealityPose nextLocalTf = localDP.rightHand[TrackedHandJoint.ThumbMetacarpalJoint];
+            thumbPose.Rotation = thumbPose.Rotation * nextLocalTf.Rotation;
+            thumbPose.Position += thumbPose.Rotation * nextLocalTf.Position;
+            nextLocalTf = localDP.rightHand[TrackedHandJoint.ThumbProximalJoint];
+            thumbPose.Rotation = thumbPose.Rotation * nextLocalTf.Rotation;
+            thumbPose.Position += thumbPose.Rotation * nextLocalTf.Position;
+            nextLocalTf = localDP.rightHand[TrackedHandJoint.ThumbDistalJoint];
+            thumbPose.Rotation = thumbPose.Rotation * nextLocalTf.Rotation;
+            thumbPose.Position += thumbPose.Rotation * nextLocalTf.Position;
+            nextLocalTf = localDP.rightHand[TrackedHandJoint.ThumbTip];
+            thumbPose.Rotation = thumbPose.Rotation * nextLocalTf.Rotation;
+            thumbPose.Position += thumbPose.Rotation * nextLocalTf.Position;
+
+            //MixedRealityPose wristPose = localDP.rightHand[TrackedHandJoint.Wrist];
+            //wristPose.Rotation = wristPose.Rotation * Recorder.RecordingFrameInverse(Handedness.Right);
+
+            //MixedRealityPose nextLocalTf = localDP.rightHand[TrackedHandJoint.ThumbTip];
+            //MixedRealityPose thumbPose = new MixedRealityPose(nextLocalTf.Position, nextLocalTf.Rotation);
+
+
+            return thumbPose;
+
+
+            //Dictionary<TrackedHandJoint, Transform> leftTransforms = CreateHandTransform();
+            //Dictionary<TrackedHandJoint, Transform> rightTransforms = CreateHandTransform();
+            //foreach (TrackedHandJoint handJoint in leftTransforms.Keys)
+            //{
+            //    leftTransforms[handJoint].localPosition = localDP.leftHand[handJoint].Position;
+            //    leftTransforms[handJoint].localRotation = localDP.leftHand[handJoint].Rotation;
+            //    rightTransforms[handJoint].localPosition = localDP.rightHand[handJoint].Position;
+            //    rightTransforms[handJoint].localRotation = localDP.rightHand[handJoint].Rotation;
+            //}
+
+        }
+
+        private static Dictionary<TrackedHandJoint, Transform> CreateHandTransform()
+        {
+            Dictionary<TrackedHandJoint, Transform> joints = new Dictionary<TrackedHandJoint, Transform>();
+            /*Transform wrist = new Transform();
+            Transform thumbRoot = wrist.GetChild(3);
+            Transform indexRoot = wrist.GetChild(1);
+            Transform middleRoot = wrist.GetChild(0);
+            Transform ringRoot = wrist.GetChild(2);
+            Transform pinkyRoot = wrist.GetChild(4).GetChild(0); // Wrist padding 
+
+            // Initialize joint dictionary with their corresponding joint transforms
+            joints[TrackedHandJoint.Wrist] = wrist;
+
+            // Thumb joints, first node is user assigned, note that there are only 4 joints in the thumb
+            joints[TrackedHandJoint.ThumbMetacarpalJoint] = thumbRoot;
+            joints[TrackedHandJoint.ThumbProximalJoint] = joints[TrackedHandJoint.ThumbMetacarpalJoint].GetChild(0);
+            joints[TrackedHandJoint.ThumbDistalJoint] = joints[TrackedHandJoint.ThumbProximalJoint].GetChild(0);
+            joints[TrackedHandJoint.ThumbTip] = joints[TrackedHandJoint.ThumbDistalJoint].GetChild(0);
+  
+            // Look up index finger joints below the index finger root joint
+            joints[TrackedHandJoint.IndexKnuckle] = indexRoot;
+            joints[TrackedHandJoint.IndexMiddleJoint] = joints[TrackedHandJoint.IndexKnuckle].GetChild(0);
+            joints[TrackedHandJoint.IndexDistalJoint] = joints[TrackedHandJoint.IndexMiddleJoint].GetChild(0);
+            joints[TrackedHandJoint.IndexTip] = joints[TrackedHandJoint.IndexDistalJoint].GetChild(0);
+
+            // Look up middle finger joints below the middle finger root joint
+            joints[TrackedHandJoint.MiddleKnuckle] = middleRoot;
+            joints[TrackedHandJoint.MiddleMiddleJoint] = joints[TrackedHandJoint.MiddleKnuckle].GetChild(0);
+            joints[TrackedHandJoint.MiddleDistalJoint] = joints[TrackedHandJoint.MiddleMiddleJoint].GetChild(0);
+            joints[TrackedHandJoint.MiddleTip] = joints[TrackedHandJoint.MiddleDistalJoint].GetChild(0);
+              
+
+            // Look up ring finger joints below the ring finger root joint
+            joints[TrackedHandJoint.RingKnuckle] = ringRoot;
+            joints[TrackedHandJoint.RingMiddleJoint] = joints[TrackedHandJoint.RingKnuckle].GetChild(0);
+            joints[TrackedHandJoint.RingDistalJoint] = joints[TrackedHandJoint.RingMiddleJoint].GetChild(0);
+            joints[TrackedHandJoint.RingTip] = joints[TrackedHandJoint.RingDistalJoint].GetChild(0);
+
+            // Look up pinky joints below the pinky root joint
+            joints[TrackedHandJoint.PinkyKnuckle] = pinkyRoot;
+            joints[TrackedHandJoint.PinkyMiddleJoint] = joints[TrackedHandJoint.PinkyKnuckle].GetChild(0);
+            joints[TrackedHandJoint.PinkyDistalJoint] = joints[TrackedHandJoint.PinkyMiddleJoint].GetChild(0);
+            joints[TrackedHandJoint.PinkyTip] = joints[TrackedHandJoint.PinkyDistalJoint].GetChild(0);*/
+            return joints;
+        }
     }
 
     public class RecordingData

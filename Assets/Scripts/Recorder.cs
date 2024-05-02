@@ -50,9 +50,9 @@ namespace Tutorials
 
         private static float FRAMERATE = 60f;
 
-        private Vector3 ModelFingerPointing = new Vector3(0, -1, 0);
+        private static Vector3 ModelFingerPointing = new Vector3(0, -1, 0);
 
-        private Vector3 ModelPalmFacing = new Vector3(-1, 0, 0);
+        private static Vector3 ModelPalmFacing = new Vector3(-1, 0, 0);
 
         // transforms for the root joints for each finger of each hand
         Transform leftHand;
@@ -413,9 +413,23 @@ namespace Tutorials
         }
 
 
-        private Quaternion Reorientation()
+        private static Quaternion Reorientation()
         {
             return Quaternion.Inverse(Quaternion.LookRotation(ModelFingerPointing, -ModelPalmFacing));
+        }
+
+        public static Quaternion RecordingFrameInverse(Handedness handedness)
+        {
+            var rot = new Quaternion();
+            if (handedness == Handedness.Right)
+            {
+                rot = Quaternion.Inverse(Reorientation() * Quaternion.Euler(0, 0, -90));
+            }
+            else
+            {
+                rot = Quaternion.Inverse(Reorientation() * Quaternion.Euler(0, 0, 90));
+            }
+            return rot;
         }
 
         public bool IsRecording { get; private set; } = false;
@@ -627,6 +641,9 @@ namespace Tutorials
                         if (hand.TryGetJoint(handJoint, out MixedRealityPose jointPose))
                         {
                             if (handJoint == TrackedHandJoint.Wrist)
+                            {
+                                jointTransform.position = jointPose.Position;
+                            } else
                             {
                                 jointTransform.position = jointPose.Position;
                             }
