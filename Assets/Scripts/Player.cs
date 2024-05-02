@@ -424,7 +424,7 @@ namespace Tutorials
             {
                 if (_guidanceMode)
                 {
-                    localTime = _holoGuider.UpdateTime();
+                    localTime = _holoGuider.UpdateTime(localTime);
                 }
                 else
                 {

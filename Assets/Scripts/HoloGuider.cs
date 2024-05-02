@@ -61,9 +61,28 @@ namespace Tutorials
             _rightHand = HandJointUtils.FindHand(Handedness.Right);
         }
 
-        public float UpdateTime()
+        public float UpdateTime(float time)
         {
+            _estimatedTime = time;
             UpdateTrackedHandState();
+            {
+                if (_rightHand != null && _rightHand.TryGetJoint(TrackedHandJoint.Wrist, out MixedRealityPose palmPose))
+                {
+                    _debugger.logInfo("t wrist: " + (100 * palmPose.Position).ToString() + " rot: " + palmPose.Rotation.ToString());
+                }
+                if (_rightHand != null && _rightHand.TryGetJoint(TrackedHandJoint.ThumbTip, out MixedRealityPose thumbPose))
+                {
+                    _debugger.logInfo("t thumb: " + (100 * thumbPose.Position).ToString());
+                }
+            }
+            {
+                DataPoint currentDataPoint = _recordingData.InterpolateDataAtTime(_estimatedTime);
+                MixedRealityPose wrist = currentDataPoint.rightHand[TrackedHandJoint.Wrist];
+                wrist.Position *= 100;
+                _debugger.logInfo("r Wrist: " + wrist.ToString());
+                MixedRealityPose thumb = DataPoint.ToGlobalFrame(currentDataPoint);
+                _debugger.logInfo("r Thumb pos: " + (100 * thumb.Position).ToString() + " rot: " + thumb.Rotation.ToString());
+            }
             float visalizeTime = _estimatedTime;
             switch (_state)
             {
@@ -77,13 +96,13 @@ namespace Tutorials
                     }
                     break;
                 case State.Preview:
-                    visalizeTime += Time.deltaTime;
+                    visalizeTime += 0.0f*Time.deltaTime;
                     if (visalizeTime >= _recordingData.GetEndTime())
                     {
                         visalizeTime = _recordingData.GetStartTime();
                         Debug.Log("Changing to Following State");
                         _debugger.logInfo("Changing to Following State");
-                        _state = State.Following;
+                        //_state = State.Following;
                     }
                     _estimatedTime = visalizeTime;
                     break;
@@ -103,41 +122,12 @@ namespace Tutorials
                     Debug.LogError("Invalid state in HoloGuider");
                     break;
             }
-            return visalizeTime;
+            return time;
+            //return visalizeTime;
         }
 
         private float FollowingUpdate()
         {
-            { 
-                DataPoint currentDataPoint = _recordingData.InterpolateDataAtTime(_estimatedTime);
-                if (_rightHand != null && _rightHand.TryGetJoint(TrackedHandJoint.Palm, out MixedRealityPose palmPose))
-                {
-                    _debugger.logInfo("t palm: " + (1000 * palmPose.Position).ToString());
-                }
-                if (_rightHand != null && _rightHand.TryGetJoint(TrackedHandJoint.ThumbTip, out MixedRealityPose thumbPose))
-                {
-                    _debugger.logInfo("t thumb: " + (1000 * thumbPose.Position).ToString());
-                }
-                if (_rightHand != null && _rightHand.TryGetJoint(TrackedHandJoint.PinkyTip, out MixedRealityPose pinkyPose))
-                {
-                    _debugger.logInfo("t Pinky: " + (1000 * pinkyPose.Position).ToString());
-                }
-            }
-            {
-                DataPoint currentDataPoint = _recordingData.InterpolateDataAtTime(_estimatedTime);
-                if (currentDataPoint.rightHand.TryGetValue(TrackedHandJoint.Palm, out MixedRealityPose palmPose))
-                {
-                    _debugger.logInfo("rec palm: " + (1000 * palmPose.Position).ToString());
-                }
-                if (currentDataPoint.rightHand.TryGetValue(TrackedHandJoint.ThumbTip, out MixedRealityPose thumbPose))
-                {
-                    _debugger.logInfo("rec thumb: " + (1000 * thumbPose.Position).ToString());
-                }
-                if (currentDataPoint.rightHand.TryGetValue(TrackedHandJoint.PinkyTip, out MixedRealityPose pinkyPose))
-                {
-                    _debugger.logInfo("rec Pinky: " + (1000 * pinkyPose.Position).ToString());
-                }
-            }
             float updatedEstimatedTime = _estimatedTime;
             if (_rightHand != null && _rightHand.TryGetJoint(TrackedHandJoint.Wrist, out MixedRealityPose jointPose))
             {
