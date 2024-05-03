@@ -587,10 +587,10 @@ PlayerSettings:
   metroPackageName: 4d-holographic-tutorials
   metroPackageVersion: 1.0.0.0
   metroCertificatePath: Assets/WSATestCertificate.pfx
-  metroCertificatePassword: =
+  metroCertificatePassword: "dc`c`ib\x7Fe\x7Fhimh"
   metroCertificateSubject: MixGuide
   metroCertificateIssuer: MixGuide
-  metroCertificateNotAfter: 808058714aaedb01
+  metroCertificateNotAfter: 806cfc889fbbdb01
   metroApplicationDescription: 4d-holographic-tutorials
   wsaImages: {}
   metroTileShortName: 4d-holographic-tutorials
