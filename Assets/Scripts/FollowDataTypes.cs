@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.MixedReality.Toolkit.Utilities;
+using Microsoft.MixedReality.Toolkit.Input;
 using UnityEngine;
 using System;
 using System.Threading.Tasks;
@@ -15,7 +16,9 @@ namespace Tutorials
         public bool leftIsTracked;
         public bool rightIsTracked;
         public Dictionary<TrackedHandJoint, MixedRealityPose> leftHand;
+        public float speedLeft;
         public Dictionary<TrackedHandJoint, MixedRealityPose> rightHand;
+        public float speedRight;
 
         public DataPoint() : this(0f) { }
 
@@ -25,7 +28,9 @@ namespace Tutorials
             leftIsTracked = false;
             rightIsTracked = false;
             leftHand = new Dictionary<TrackedHandJoint, MixedRealityPose>();
+            speedLeft = 1f;
             rightHand = new Dictionary<TrackedHandJoint, MixedRealityPose>();
+            speedRight = 1f;
         }
 
         public static DataPoint Interpolate(DataPoint firstDataPoint, DataPoint secondDataPoint, float alpha)
@@ -36,28 +41,34 @@ namespace Tutorials
             {
                 interpolatedDataPoint.leftHand = secondDataPoint.leftHand;
                 interpolatedDataPoint.leftIsTracked = secondDataPoint.leftIsTracked;
+                interpolatedDataPoint.speedLeft = secondDataPoint.speedLeft;
             } else if (!secondDataPoint.leftIsTracked)
             {
                 interpolatedDataPoint.leftHand = firstDataPoint.leftHand;
                 interpolatedDataPoint.leftIsTracked = firstDataPoint.leftIsTracked;
+                interpolatedDataPoint.speedLeft = firstDataPoint.speedLeft;
             } else
             {
                 interpolatedDataPoint.leftIsTracked = true;
                 interpolatedDataPoint.leftHand = InterpolateJoints(firstDataPoint.leftHand, secondDataPoint.leftHand, alpha);
+                interpolatedDataPoint.speedLeft = InterpolateSpeed(firstDataPoint.speedLeft, secondDataPoint.speedLeft, alpha);
             }
 
             if (!firstDataPoint.rightIsTracked)
             {
                 interpolatedDataPoint.rightHand = secondDataPoint.rightHand;
                 interpolatedDataPoint.rightIsTracked = secondDataPoint.rightIsTracked;
+                interpolatedDataPoint.speedRight = secondDataPoint.speedRight;
             } else if (!secondDataPoint.rightIsTracked)
             {
                 interpolatedDataPoint.rightHand = firstDataPoint.rightHand;
                 interpolatedDataPoint.rightIsTracked = firstDataPoint.rightIsTracked;
+                interpolatedDataPoint.speedLeft = firstDataPoint.speedRight;
             } else
             {
                 interpolatedDataPoint.rightIsTracked = true;
                 interpolatedDataPoint.rightHand = InterpolateJoints(firstDataPoint.rightHand, secondDataPoint.rightHand, alpha);
+                interpolatedDataPoint.speedLeft = InterpolateSpeed(firstDataPoint.speedRight, secondDataPoint.speedRight, alpha)
             }
             return interpolatedDataPoint;          
         }
@@ -84,6 +95,10 @@ namespace Tutorials
             return result;
         }
 
+        private static float InterpolateSpeed(float firstSpeed, float secondSpeed, float alpha) {
+            return firstSpeed + alpha * (secondSpeed - firstSpeed);
+        }
+
         public static DataPoint FromKeyframe(InputRecordingBuffer.Keyframe keyframe)
         {
             DataPoint dataPoint = new DataPoint(keyframe.Time);
@@ -105,106 +120,115 @@ namespace Tutorials
             }
             return MRPoseDict;
         }
-
-        public static MixedRealityPose ToGlobalFrame(DataPoint localDP)
-        {
-            DataPoint globalDP = new DataPoint(localDP.timeStamp);
-
-            // Left
-            //leftJoints[TrackedHandJoint.ThumbMetacarpalJoint] = thumbRoot;
-            //leftJoints[TrackedHandJoint.ThumbProximalJoint] = RetrieveChild(TrackedHandJoint.ThumbMetacarpalJoint, Handedness.Left);
-            //leftJoints[TrackedHandJoint.ThumbDistalJoint] = RetrieveChild(TrackedHandJoint.ThumbProximalJoint, Handedness.Left);
-            //leftJoints[TrackedHandJoint.ThumbTip] = RetrieveChild(TrackedHandJoint.ThumbDistalJoint, Handedness.Left);
-
-            MixedRealityPose wristPose = localDP.rightHand[TrackedHandJoint.Wrist];
-            wristPose.Rotation = wristPose.Rotation * Recorder.RecordingFrameInverse(Handedness.Right);
-
-            MixedRealityPose thumbPose = new MixedRealityPose(wristPose.Position, wristPose.Rotation);
-            MixedRealityPose nextLocalTf = localDP.rightHand[TrackedHandJoint.ThumbMetacarpalJoint];
-            thumbPose.Rotation = thumbPose.Rotation * nextLocalTf.Rotation;
-            thumbPose.Position += thumbPose.Rotation * nextLocalTf.Position;
-            nextLocalTf = localDP.rightHand[TrackedHandJoint.ThumbProximalJoint];
-            thumbPose.Rotation = thumbPose.Rotation * nextLocalTf.Rotation;
-            thumbPose.Position += thumbPose.Rotation * nextLocalTf.Position;
-            nextLocalTf = localDP.rightHand[TrackedHandJoint.ThumbDistalJoint];
-            thumbPose.Rotation = thumbPose.Rotation * nextLocalTf.Rotation;
-            thumbPose.Position += thumbPose.Rotation * nextLocalTf.Position;
-            nextLocalTf = localDP.rightHand[TrackedHandJoint.ThumbTip];
-            thumbPose.Rotation = thumbPose.Rotation * nextLocalTf.Rotation;
-            thumbPose.Position += thumbPose.Rotation * nextLocalTf.Position;
-
-            //MixedRealityPose wristPose = localDP.rightHand[TrackedHandJoint.Wrist];
-            //wristPose.Rotation = wristPose.Rotation * Recorder.RecordingFrameInverse(Handedness.Right);
-
-            //MixedRealityPose nextLocalTf = localDP.rightHand[TrackedHandJoint.ThumbTip];
-            //MixedRealityPose thumbPose = new MixedRealityPose(nextLocalTf.Position, nextLocalTf.Rotation);
-
-
-            return thumbPose;
-
-
-            //Dictionary<TrackedHandJoint, Transform> leftTransforms = CreateHandTransform();
-            //Dictionary<TrackedHandJoint, Transform> rightTransforms = CreateHandTransform();
-            //foreach (TrackedHandJoint handJoint in leftTransforms.Keys)
-            //{
-            //    leftTransforms[handJoint].localPosition = localDP.leftHand[handJoint].Position;
-            //    leftTransforms[handJoint].localRotation = localDP.leftHand[handJoint].Rotation;
-            //    rightTransforms[handJoint].localPosition = localDP.rightHand[handJoint].Position;
-            //    rightTransforms[handJoint].localRotation = localDP.rightHand[handJoint].Rotation;
-            //}
-
-        }
-
-        private static Dictionary<TrackedHandJoint, Transform> CreateHandTransform()
-        {
-            Dictionary<TrackedHandJoint, Transform> joints = new Dictionary<TrackedHandJoint, Transform>();
-            /*Transform wrist = new Transform();
-            Transform thumbRoot = wrist.GetChild(3);
-            Transform indexRoot = wrist.GetChild(1);
-            Transform middleRoot = wrist.GetChild(0);
-            Transform ringRoot = wrist.GetChild(2);
-            Transform pinkyRoot = wrist.GetChild(4).GetChild(0); // Wrist padding 
-
-            // Initialize joint dictionary with their corresponding joint transforms
-            joints[TrackedHandJoint.Wrist] = wrist;
-
-            // Thumb joints, first node is user assigned, note that there are only 4 joints in the thumb
-            joints[TrackedHandJoint.ThumbMetacarpalJoint] = thumbRoot;
-            joints[TrackedHandJoint.ThumbProximalJoint] = joints[TrackedHandJoint.ThumbMetacarpalJoint].GetChild(0);
-            joints[TrackedHandJoint.ThumbDistalJoint] = joints[TrackedHandJoint.ThumbProximalJoint].GetChild(0);
-            joints[TrackedHandJoint.ThumbTip] = joints[TrackedHandJoint.ThumbDistalJoint].GetChild(0);
-  
-            // Look up index finger joints below the index finger root joint
-            joints[TrackedHandJoint.IndexKnuckle] = indexRoot;
-            joints[TrackedHandJoint.IndexMiddleJoint] = joints[TrackedHandJoint.IndexKnuckle].GetChild(0);
-            joints[TrackedHandJoint.IndexDistalJoint] = joints[TrackedHandJoint.IndexMiddleJoint].GetChild(0);
-            joints[TrackedHandJoint.IndexTip] = joints[TrackedHandJoint.IndexDistalJoint].GetChild(0);
-
-            // Look up middle finger joints below the middle finger root joint
-            joints[TrackedHandJoint.MiddleKnuckle] = middleRoot;
-            joints[TrackedHandJoint.MiddleMiddleJoint] = joints[TrackedHandJoint.MiddleKnuckle].GetChild(0);
-            joints[TrackedHandJoint.MiddleDistalJoint] = joints[TrackedHandJoint.MiddleMiddleJoint].GetChild(0);
-            joints[TrackedHandJoint.MiddleTip] = joints[TrackedHandJoint.MiddleDistalJoint].GetChild(0);
-              
-
-            // Look up ring finger joints below the ring finger root joint
-            joints[TrackedHandJoint.RingKnuckle] = ringRoot;
-            joints[TrackedHandJoint.RingMiddleJoint] = joints[TrackedHandJoint.RingKnuckle].GetChild(0);
-            joints[TrackedHandJoint.RingDistalJoint] = joints[TrackedHandJoint.RingMiddleJoint].GetChild(0);
-            joints[TrackedHandJoint.RingTip] = joints[TrackedHandJoint.RingDistalJoint].GetChild(0);
-
-            // Look up pinky joints below the pinky root joint
-            joints[TrackedHandJoint.PinkyKnuckle] = pinkyRoot;
-            joints[TrackedHandJoint.PinkyMiddleJoint] = joints[TrackedHandJoint.PinkyKnuckle].GetChild(0);
-            joints[TrackedHandJoint.PinkyDistalJoint] = joints[TrackedHandJoint.PinkyMiddleJoint].GetChild(0);
-            joints[TrackedHandJoint.PinkyTip] = joints[TrackedHandJoint.PinkyDistalJoint].GetChild(0);*/
-            return joints;
-        }
     }
 
+    public class FingerAndWristData
+    {
+        public Vector3 wristPosition;
+        public Vector3 thumbPosition;
+        public Vector3 indexPosition;
+        public Vector3 middlePosition;
+        public Vector3 ringPosition;
+        public Vector3 pinkyPosition;
+
+        public FingerAndWristData(
+            Vector3 wristPos,
+            Vector3 thumbPos,
+            Vector3 indexPos,
+            Vector3 middlePos,
+            Vector3 ringPos,
+            Vector3 pinkyPos)
+        {
+            this.wristPosition = wristPos;
+            this.thumbPosition = thumbPos;
+            this.indexPosition = indexPos;
+            this.middlePosition = middlePos;
+            this.ringPosition = ringPos;
+            this.pinkyPosition = pinkyPos;
+        }
+
+        public FingerAndWristData(Dictionary<TrackedHandJoint, MixedRealityPose> handDict)
+        {
+            wristPosition = handDict[TrackedHandJoint.Wrist].Position;
+            thumbPosition = handDict[TrackedHandJoint.ThumbTip].Position;
+            indexPosition = handDict[TrackedHandJoint.IndexTip].Position;
+            middlePosition = handDict[TrackedHandJoint.MiddleTip].Position;
+            ringPosition = handDict[TrackedHandJoint.RingTip].Position;
+            pinkyPosition = handDict[TrackedHandJoint.PinkyTip].Position;
+        }
+
+        public FingerAndWristData(IMixedRealityHand hand) {
+            bool success = true;
+            if(hand.TryGetJoint(TrackedHandJoint.Wrist, out MixedRealityPose wristPose)){
+                wristPosition = wristPose.Position;                
+            } else {
+                success = false;
+            }
+            if(hand.TryGetJoint(TrackedHandJoint.ThumbTip, out MixedRealityPose thumbPose)) {
+                thumbPosition = thumbPose.Position;
+            } else {
+                success = false;
+            }
+            if(hand.TryGetJoint(TrackedHandJoint.IndexTip, out MixedRealityPose indexPose)) {
+                indexPosition = indexPose.Position;
+            } else {
+                success = false;
+            }
+            if(hand.TryGetJoint(TrackedHandJoint.MiddleTip, out MixedRealityPose middlePose)) {
+                middlePosition = middlePose.Position;
+            } else {
+                success = false;
+            }
+            if(hand.TryGetJoint(TrackedHandJoint.RingTip, out MixedRealityPose ringPose)){
+                ringPosition = ringPose.Position;
+            } else {
+                success = false;
+            }
+            if(hand.TryGetJoint(TrackedHandJoint.PinkyTip, out MixedRealityPose pinkyPose)){
+                pinkyPosition = pinkyPose.Position;
+            } else {
+                success = false;
+            }
+            if (!success) {
+                Debug.LogError("Could not get all joint from hand");
+                throw new Exception("Could not get all joints from hand");
+            }
+        }
+        public override string ToString() {
+            string txt = "";
+            txt += "Wrist: " + wristPosition.ToString();
+            txt += ", Thumb: " + thumbPosition.ToString();
+            txt += ", Index: " + indexPosition.ToString();
+            txt += ", Middle: " + middlePosition.ToString();
+            txt += ", Ring: " + ringPosition.ToString();
+            txt += ", Pinky: " + pinkyPosition.ToString();
+            return txt;
+        } 
+
+        public static float Distance(FingerAndWristData a, FingerAndWristData b, float[] weight = null)
+        {
+            const int N_dim = 6;
+            if (weight == null) {
+                weight = new float[N_dim]{1f/N_dim, 1f/N_dim, 1f/N_dim, 1f/N_dim, 1f/N_dim, 1f/N_dim};   
+            }
+            if (weight.Count() != N_dim) {
+                Debug.LogError("Invalid Weight list");
+                throw new Exception("Invalid Weights for distance caluculation");
+            }
+            float dist = 0.0f;
+            dist += weight[0] * (float)(a.wristPosition - b.wristPosition).magnitude;
+            dist += weight[1] * (float)(a.thumbPosition - b.thumbPosition).magnitude;
+            dist += weight[2] * (float)(a.indexPosition - b.indexPosition).magnitude;
+            dist += weight[3] * (float)(a.middlePosition - b.middlePosition).magnitude;
+            dist += weight[4] * (float)(a.ringPosition - b.ringPosition).magnitude;
+            dist += weight[5] * (float)(a.pinkyPosition - b.pinkyPosition).magnitude;
+            return dist;
+        }
+    }
     public class RecordingData
     {
         private List<DataPoint> dataPoints;
+        public List<float> estimatedSpeed;
 
         public RecordingData()
         {
@@ -320,6 +344,10 @@ namespace Tutorials
 
         public static RecordingData FromInputAnimation(InputAnimation inputAnimation)
         {
+            if (inputAnimation == null)
+            {
+                throw new Exception("InputAnimation is null");
+            }
             Keyframe[] leftTrackedCurve = inputAnimation.handTrackedCurveLeft.keys;
             Keyframe[] rightTrackedCurve = inputAnimation.handTrackedCurveRight.keys;
 
@@ -346,19 +374,19 @@ namespace Tutorials
                     {
                         throw new Exception("Joint Not present in data: " + (TrackedHandJoint)j);
                     }
-                    Keyframe[] PosXCurve = curves.PositionX.keys;
+                    Keyframe[] PosXCurve = curves.GlobalPositionX.keys;
                     Debug.Assert(PosXCurve.Count() == num_data_points);
-                    Keyframe[] PosYCurve = curves.PositionY.keys;
+                    Keyframe[] PosYCurve = curves.GlobalPositionY.keys;
                     Debug.Assert(PosYCurve.Count() == num_data_points);
-                    Keyframe[] PosZCurve = curves.PositionZ.keys;
+                    Keyframe[] PosZCurve = curves.GlobalPositionZ.keys;
                     Debug.Assert(PosZCurve.Count() == num_data_points);
-                    Keyframe[] RotXCurve = curves.RotationX.keys;
+                    Keyframe[] RotXCurve = curves.GlobalRotationX.keys;
                     Debug.Assert(RotXCurve.Count() == num_data_points);
-                    Keyframe[] RotYCurve = curves.RotationY.keys;
+                    Keyframe[] RotYCurve = curves.GlobalRotationY.keys;
                     Debug.Assert(RotYCurve.Count() == num_data_points);
-                    Keyframe[] RotZCurve = curves.RotationZ.keys;
+                    Keyframe[] RotZCurve = curves.GlobalRotationZ.keys;
                     Debug.Assert(RotZCurve.Count() == num_data_points);
-                    Keyframe[] RotWCurve = curves.RotationW.keys;
+                    Keyframe[] RotWCurve = curves.GlobalRotationW.keys;
                     Debug.Assert(RotWCurve.Count() == num_data_points);
 
                     for (int i = 0; i < num_data_points; i++)
@@ -376,19 +404,19 @@ namespace Tutorials
                     {
                         throw new Exception("Joint Not present in data: " + (TrackedHandJoint)j);
                     }
-                    Keyframe[] PosXCurve = curves.PositionX.keys;
+                    Keyframe[] PosXCurve = curves.GlobalPositionX.keys;
                     Debug.Assert(PosXCurve.Count() == num_data_points);
-                    Keyframe[] PosYCurve = curves.PositionY.keys;
+                    Keyframe[] PosYCurve = curves.GlobalPositionY.keys;
                     Debug.Assert(PosYCurve.Count() == num_data_points);
-                    Keyframe[] PosZCurve = curves.PositionZ.keys;
+                    Keyframe[] PosZCurve = curves.GlobalPositionZ.keys;
                     Debug.Assert(PosZCurve.Count() == num_data_points);
-                    Keyframe[] RotXCurve = curves.RotationX.keys;
+                    Keyframe[] RotXCurve = curves.GlobalRotationX.keys;
                     Debug.Assert(RotXCurve.Count() == num_data_points);
-                    Keyframe[] RotYCurve = curves.RotationY.keys;
+                    Keyframe[] RotYCurve = curves.GlobalRotationY.keys;
                     Debug.Assert(RotYCurve.Count() == num_data_points);
-                    Keyframe[] RotZCurve = curves.RotationZ.keys;
+                    Keyframe[] RotZCurve = curves.GlobalRotationZ.keys;
                     Debug.Assert(RotZCurve.Count() == num_data_points);
-                    Keyframe[] RotWCurve = curves.RotationW.keys;
+                    Keyframe[] RotWCurve = curves.GlobalRotationW.keys;
                     Debug.Assert(RotWCurve.Count() == num_data_points);
 
                     for (int i = 0; i < num_data_points; i++)
@@ -417,5 +445,41 @@ namespace Tutorials
             }
             return recordingData;
         }
-    }
+
+        private void UpdateSpeedEstimate() {
+            if (dataPoints.Count() < 3) {
+                return;
+            }
+            float[] newSpeedEst = new float[dataPoints.Count()];
+            float[] rawSpeed = new float[dataPoints.Count() - 1];
+
+            for (int i = 0; i < rawSpeed.Count(); i++) {
+                rawSpeed[i] = CalSpeed(dataPoints[i], dataPoints[i+1]);
+            }
+
+
+            int halfWindowSize = Math.Min((dataPoints.Count()-1)/2, 5);
+            // speed = 1/3(rawSpeed[-1] + rawSpeed[0] + rawSpeed[1])
+            float totalSpeedOverWindow = 0;
+            for (int i = 0; i < 2*halfWindowSize + 1; i++) {
+                // totalSpeedOverWindow += CalcSpeed();
+            }
+            for (int i = halfWindowSize + 1; i < dataPoints.Count() - halfWindowSize; i++) {
+                totalSpeedOverWindow -= 
+            }          
+            
+        } 
+
+        private void CalSpeed (DataPoint obt1, DataPoint obt2, Handedness hand, float alpha) {
+            var dist = null;
+            switch (hand) {
+                case: Handedness.Right
+                    dist = obt1.rightHand.wristPos.Position - obt2.rightHand.wristPos.Position; 
+                break;
+                case: Handedness.Left
+                    dist = obt1.leftHand.wristPos.Position - obt2.leftHand.wristPos.Position;
+                break;
+            }
+            
+        }
 }

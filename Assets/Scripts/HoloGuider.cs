@@ -63,26 +63,70 @@ namespace Tutorials
 
         public float UpdateTime(float time)
         {
+            // var handInput = new Tuple<InputSourceType, Handedness>(InputSourceType.Controller, Handedness.Right);
+            // _debugger.logInfo("handInput: "+handInput.ToString());
             _estimatedTime = time;
             UpdateTrackedHandState();
             {
-                if (_rightHand != null && _rightHand.TryGetJoint(TrackedHandJoint.Wrist, out MixedRealityPose palmPose))
-                {
-                    _debugger.logInfo("t wrist: " + (100 * palmPose.Position).ToString() + " rot: " + palmPose.Rotation.ToString());
-                }
-                if (_rightHand != null && _rightHand.TryGetJoint(TrackedHandJoint.ThumbTip, out MixedRealityPose thumbPose))
-                {
-                    _debugger.logInfo("t thumb: " + (100 * thumbPose.Position).ToString());
+                    DataPoint currentDataPoint = _recordingData.InterpolateDataAtTime(_estimatedTime);
+                    FingerAndWristData recData = new FingerAndWristData(currentDataPoint.rightHand);
+                    _debugger.logInfo("Rec: " + recData.ToString());
+                    float dist0 = FingerAndWristData.Distance(recData, recData);
+                    _debugger.logInfo("Dist0: " + dist0);
+                if (_rightHand != null) {
+                    FingerAndWristData trackData = new FingerAndWristData(_rightHand);
+                    _debugger.logInfo("Tracked: "+ trackData.ToString());
+                    float dist = FingerAndWristData.Distance(recData, trackData);
+                    _debugger.logInfo("Dist: " + dist.ToString());
                 }
             }
-            {
-                DataPoint currentDataPoint = _recordingData.InterpolateDataAtTime(_estimatedTime);
-                MixedRealityPose wrist = currentDataPoint.rightHand[TrackedHandJoint.Wrist];
-                wrist.Position *= 100;
-                _debugger.logInfo("r Wrist: " + wrist.ToString());
-                MixedRealityPose thumb = DataPoint.ToGlobalFrame(currentDataPoint);
-                _debugger.logInfo("r Thumb pos: " + (100 * thumb.Position).ToString() + " rot: " + thumb.Rotation.ToString());
-            }
+            // {
+            //     var handInput = new Tuple<InputSourceType, Handedness>(InputSourceType.Controller, Handedness.Right);
+            //     _debugger.logInfo("handInput: "+handInput.ToString())
+            //     if (_rightHand != null && _rightHand.TryGetJoint(TrackedHandJoint.Wrist, out MixedRealityPose palmPose))
+            //     {
+            //         _debugger.logInfo("t wrist: " + (100 * palmPose.Position).ToString() + " rot: " + palmPose.Rotation.ToString());
+            //     }
+            //     DataPoint currentDataPoint = _recordingData.InterpolateDataAtTime(_estimatedTime);
+            //     MixedRealityPose wrist = currentDataPoint.rightHand[TrackedHandJoint.Wrist];
+            //     wrist.Position *= 100;
+            //     _debugger.logInfo("r Wrist: " + wrist.ToString());
+            //     if (_rightHand != null && _rightHand.TryGetJoint(TrackedHandJoint.ThumbTip, out MixedRealityPose thumbPose))
+            //     {
+            //         _debugger.logInfo("t thumb: " + (100 * thumbPose.Position).ToString());
+            //     }
+            //     MixedRealityPose thumb = currentDataPoint.rightHand[TrackedHandJoint.ThumbTip];
+            //     thumb.Position *= 100;
+            //     _debugger.logInfo("r thumb: " + thumb.ToString());
+            //     if (_rightHand != null && _rightHand.TryGetJoint(TrackedHandJoint.IndexTip, out MixedRealityPose indexPose))
+            //     {
+            //         _debugger.logInfo("t index: " + (100 * indexPose.Position).ToString());
+            //     }
+            //     MixedRealityPose index = currentDataPoint.rightHand[TrackedHandJoint.IndexTip];
+            //     index.Position *= 100;
+            //     _debugger.logInfo("r index: " + index.Position.ToString());
+            //     if (_rightHand != null && _rightHand.TryGetJoint(TrackedHandJoint.MiddleTip, out MixedRealityPose middlePose))
+            //     {
+            //         _debugger.logInfo("t middle: " + (100 * middlePose.Position).ToString());
+            //     }
+            //     MixedRealityPose middle = currentDataPoint.rightHand[TrackedHandJoint.MiddleTip];
+            //     middle.Position *= 100;
+            //     _debugger.logInfo("r middle: " + middle.Position.ToString());
+            //     if (_rightHand != null && _rightHand.TryGetJoint(TrackedHandJoint.RingTip, out MixedRealityPose ringPose))
+            //     {
+            //         _debugger.logInfo("t ring: " + (100 * ringPose.Position).ToString());
+            //     }
+            //     MixedRealityPose ring = currentDataPoint.rightHand[TrackedHandJoint.RingTip];
+            //     ring.Position *= 100;
+            //     _debugger.logInfo("r ring: " + ring.Position.ToString());
+            //     if (_rightHand != null && _rightHand.TryGetJoint(TrackedHandJoint.PinkyTip, out MixedRealityPose pinkyPose))
+            //     {
+            //         _debugger.logInfo("t pinky: " + (100 * pinkyPose.Position).ToString());
+            //     }
+            //     MixedRealityPose pinky = currentDataPoint.rightHand[TrackedHandJoint.PinkyTip];
+            //     pinky.Position *= 100;
+            //     _debugger.logInfo("r pinky: " + pinky.Position.ToString());
+            // }
             float visalizeTime = _estimatedTime;
             switch (_state)
             {

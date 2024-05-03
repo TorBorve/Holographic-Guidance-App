@@ -90,7 +90,7 @@ namespace Tutorials
         /// </summary>
         public class PoseCurves : ICloneable
         {
-            public static int CURVE_COUNT = 10;
+            public static int CURVE_COUNT = 17;
 
             public AnimationCurve PositionX = new AnimationCurve();
             public AnimationCurve PositionY = new AnimationCurve();
@@ -103,17 +103,17 @@ namespace Tutorials
             public AnimationCurve ScaleY = new AnimationCurve();
             public AnimationCurve ScaleZ = new AnimationCurve();
 
-            /*public AnimationCurve LocalPositionX = new AnimationCurve();
-            public AnimationCurve LocalPositionY = new AnimationCurve();
-            public AnimationCurve LocalPositionZ = new AnimationCurve();
-            public AnimationCurve LocalRotationX = new AnimationCurve();
-            public AnimationCurve LocalRotationY = new AnimationCurve();
-            public AnimationCurve LocalRotationZ = new AnimationCurve();
-            public AnimationCurve LocalRotationW = new AnimationCurve();
-            public AnimationCurve LocalScaleX = new AnimationCurve();
-            public AnimationCurve LocalScaleY = new AnimationCurve();
-            public AnimationCurve LocalScaleZ = new AnimationCurve();
-            */
+            public AnimationCurve GlobalPositionX = new AnimationCurve();
+            public AnimationCurve GlobalPositionY = new AnimationCurve();
+            public AnimationCurve GlobalPositionZ = new AnimationCurve();
+            public AnimationCurve GlobalRotationX = new AnimationCurve();
+            public AnimationCurve GlobalRotationY = new AnimationCurve();
+            public AnimationCurve GlobalRotationZ = new AnimationCurve();
+            public AnimationCurve GlobalRotationW = new AnimationCurve();
+            //public AnimationCurve LocalScaleX = new AnimationCurve();
+            //public AnimationCurve LocalScaleY = new AnimationCurve();
+            //public AnimationCurve LocalScaleZ = new AnimationCurve();
+
             public void AddKey(float time, MixedRealityPose pose)
             {
                 AddFloatKey(PositionX, time, pose.Position.x);
@@ -140,20 +140,19 @@ namespace Tutorials
                 AddFloatKey(ScaleX, time, transformData.scalex);
                 AddFloatKey(ScaleY, time, transformData.scaley);
                 AddFloatKey(ScaleZ, time, transformData.scalez);
-                /*
-                AddFloatKey(LocalPositionX, time, transformData.locposx);
-                AddFloatKey(LocalPositionY, time, transformData.locposy);
-                AddFloatKey(LocalPositionZ, time, transformData.locposz);
 
-                AddFloatKey(LocalRotationX, time, transformData.locrotx);
-                AddFloatKey(LocalRotationY, time, transformData.locroty);
-                AddFloatKey(LocalRotationZ, time, transformData.locrotz);
-                AddFloatKey(LocalRotationW, time, transformData.locrotw);
+                AddFloatKey(GlobalPositionX, time, transformData.globPosx);
+                AddFloatKey(GlobalPositionY, time, transformData.globPosy);
+                AddFloatKey(GlobalPositionZ, time, transformData.globPosz);
 
-                AddFloatKey(LocalScaleX, time, transformData.locscalex);
-                AddFloatKey(LocalScaleY, time, transformData.locscaley);
-                AddFloatKey(LocalScaleZ, time, transformData.locscalez);
-                */
+                AddFloatKey(GlobalRotationX, time, transformData.globRotx);
+                AddFloatKey(GlobalRotationY, time, transformData.globRoty);
+                AddFloatKey(GlobalRotationZ, time, transformData.globRotz);
+                AddFloatKey(GlobalRotationW, time, transformData.globRotw);
+
+                //AddFloatKey(LocalScaleX, time, transformData.locscalex);
+                //AddFloatKey(LocalScaleY, time, transformData.locscaley);
+                //AddFloatKey(LocalScaleZ, time, transformData.locscalez);
             }
 
             /// <summary>
@@ -179,17 +178,17 @@ namespace Tutorials
                                                 RotationW.Evaluate(time),
                                                 ScaleX.Evaluate(time),
                                                 ScaleY.Evaluate(time),
-                                                ScaleZ.Evaluate(time));
-                                                /*LocalPositionX.Evaluate(time),
-                                                LocalPositionY.Evaluate(time),
-                                                LocalPositionZ.Evaluate(time),
-                                                LocalRotationX.Evaluate(time),
-                                                LocalRotationY.Evaluate(time),
-                                                LocalRotationZ.Evaluate(time),
-                                                LocalRotationW.Evaluate(time),
-                                                LocalScaleX.Evaluate(time),
-                                                LocalScaleY.Evaluate(time),
-                                                LocalScaleZ.Evaluate(time));*/
+                                                ScaleZ.Evaluate(time),
+                                                GlobalPositionX.Evaluate(time),
+                                                GlobalPositionY.Evaluate(time),
+                                                GlobalPositionZ.Evaluate(time),
+                                                GlobalRotationX.Evaluate(time),
+                                                GlobalRotationY.Evaluate(time),
+                                                GlobalRotationZ.Evaluate(time),
+                                                GlobalRotationW.Evaluate(time));
+                                                //LocalScaleX.Evaluate(time),
+                                                //LocalScaleY.Evaluate(time),
+                                                //LocalScaleZ.Evaluate(time));
                 return transformData;
             }
 
@@ -207,18 +206,16 @@ namespace Tutorials
                 result.Add(ScaleY);
                 result.Add(ScaleZ);
 
-                /*
-                result.Add(LocalPositionX);
-                result.Add(LocalPositionY);
-                result.Add(LocalPositionZ);
-                result.Add(LocalRotationX);
-                result.Add(LocalRotationY);
-                result.Add(LocalRotationZ);
-                result.Add(LocalRotationW);
-                result.Add(LocalScaleX);
-                result.Add(LocalScaleY);
-                result.Add(LocalScaleZ);
-                */
+                result.Add(GlobalPositionX);
+                result.Add(GlobalPositionY);
+                result.Add(GlobalPositionZ);
+                result.Add(GlobalRotationX);
+                result.Add(GlobalRotationY);
+                result.Add(GlobalRotationZ);
+                result.Add(GlobalRotationW);
+                //result.Add(LocalScaleX);
+                //result.Add(LocalScaleY);
+                //result.Add(LocalScaleZ);
                 return result;
             }
 
@@ -240,17 +237,16 @@ namespace Tutorials
                 result.ScaleY = curves[8];
                 result.ScaleZ = curves[9];
 
-                /*result.LocalPositionX = curves[10];
-                result.LocalPositionY = curves[11];
-                result.LocalPositionZ = curves[12];
-                result.LocalRotationX = curves[13];
-                result.LocalRotationY = curves[14];
-                result.LocalRotationZ = curves[15];
-                result.LocalRotationW = curves[16];
-                result.LocalScaleX = curves[17];
-                result.LocalScaleY = curves[18];
-                result.LocalScaleZ = curves[19];
-                */
+                result.GlobalPositionX = curves[10];
+                result.GlobalPositionY = curves[11];
+                result.GlobalPositionZ = curves[12];
+                result.GlobalRotationX = curves[13];
+                result.GlobalRotationY = curves[14];
+                result.GlobalRotationZ = curves[15];
+                result.GlobalRotationW = curves[16];
+                //result.LocalScaleX = curves[17];
+                //result.LocalScaleY = curves[18];
+                //result.LocalScaleZ = curves[19];
                 return result;
             }
 
@@ -258,12 +254,12 @@ namespace Tutorials
             {
                 foreach (var curve in GetAnimationCurves())
                 {
-                    while(curve.length > 0 && curve.keys[0].time < startTime)
+                    while (curve.length > 0 && curve.keys[0].time < startTime)
                     {
                         curve.RemoveKey(0);
                     }
                     int idx = curve.length - 1;
-                    while(idx >= 0 && curve.keys[idx].time > endTime)
+                    while (idx >= 0 && curve.keys[idx].time > endTime)
                     {
                         curve.RemoveKey(idx--);
                     }
@@ -343,14 +339,14 @@ namespace Tutorials
         private AnimationCurve handPinchCurveLeft;
         [SerializeField]
         private AnimationCurve handPinchCurveRight;
-        /*[SerializeField]
-        private AnimationCurve handGripCurveLeft;
+        //[SerializeField]
+        //private AnimationCurve handGripCurveLeft;
+        //[SerializeField]
+        //private AnimationCurve handGripCurveRight;
         [SerializeField]
-        private AnimationCurve handGripCurveRight;*/
+        public Dictionary<TrackedHandJoint, PoseCurves> handJointCurvesLeft;
         [SerializeField]
-        public  Dictionary<TrackedHandJoint, PoseCurves> handJointCurvesLeft;// { get; private set; }
-        [SerializeField]
-        public Dictionary<TrackedHandJoint, PoseCurves> handJointCurvesRight; // { get; private set; }
+        public Dictionary<TrackedHandJoint, PoseCurves> handJointCurvesRight;
         [SerializeField]
         private PoseCurves cameraCurves;
         [SerializeField]
@@ -392,8 +388,8 @@ namespace Tutorials
             handTrackedCurveRight = new AnimationCurve();
             handPinchCurveLeft = new AnimationCurve();
             handPinchCurveRight = new AnimationCurve();
-            /*handGripCurveLeft = new AnimationCurve();
-            handGripCurveRight = new AnimationCurve();*/
+            //handGripCurveLeft = new AnimationCurve();
+            //handGripCurveRight = new AnimationCurve();
             handJointCurvesLeft = new Dictionary<TrackedHandJoint, PoseCurves>();
             handJointCurvesRight = new Dictionary<TrackedHandJoint, PoseCurves>();
             cameraCurves = new PoseCurves();
@@ -412,7 +408,7 @@ namespace Tutorials
             copy.handTrackedCurveRight = Clone(handTrackedCurveRight);
             copy.handPinchCurveLeft = Clone(handPinchCurveLeft);
             copy.handPinchCurveRight = Clone(handPinchCurveRight);
-           // copy.handGripCurveLeft = Clone(handGripCurveLeft);
+            //copy.handGripCurveLeft = Clone(handGripCurveLeft);
             //copy.handGripCurveRight = Clone(handGripCurveRight);
             foreach (var item in handJointCurvesLeft)
             {
@@ -459,7 +455,7 @@ namespace Tutorials
         public void ToStream(StreamWriter writer, TransformData aspor = null)
         {
             var defaultCurves = new PoseCurves();
-            if (aspor == null) { 
+            if (aspor == null) {
                 aspor = TransformData.ZeroIdentity();
             }
             InputAnimationSerializationUtils.WriteHeader(writer);
@@ -470,10 +466,10 @@ namespace Tutorials
             writer.WriteLine("REFERENCE_COORDINATE_SYSTEM");
             writer.WriteLine(aspor.posx + ", " + aspor.posy + ", " + aspor.posz + ", "
                 + aspor.rotx + ", " + aspor.roty + ", " + aspor.rotz + ", " + aspor.rotw
-                + ", " + aspor.scalex + ", " + aspor.scaley + ", " + aspor.scalez);
-                /*+ ", " + aspor.locposx + ", " + aspor.locposy + ", " + aspor.locposz
-                + ", " + aspor.locrotx + ", " + aspor.locroty + ", " + aspor.locrotz + ", " + aspor.locrotw
-                + ", " + aspor.locscalex + ", " + aspor.locscaley + ", " + aspor.locscalez);*/
+                + ", " + aspor.scalex + ", " + aspor.scaley + ", " + aspor.scalez
+                +", " + aspor.globPosx + ", " + aspor.globPosy + ", " + aspor.globPosz
+                + ", " + aspor.globRotx + ", " + aspor.globRoty + ", " + aspor.globRotz + ", " + aspor.globRotw);
+                //+ ", " + aspor.locscalex + ", " + aspor.locscaley + ", " + aspor.locscalez);
 
             writer.WriteLine("HEAD_POSES");
             CurvesToStream(writer, cameraCurves.GetAnimationCurves());
@@ -518,7 +514,7 @@ namespace Tutorials
             CurvesToStream(writer, gazeCurves.GetAnimationCurves());
 
             ObjectCurvesToStream(writer, objectCurves);
-            
+
             InputAnimationSerializationUtils.WriteMarkerList(writer, markers);
         }
 
@@ -590,10 +586,10 @@ namespace Tutorials
 
         /*public double[] EvaluateGlobalJoint(out int stepCount, int numSteps = 1000)
         {
-            
+
             int keyframeCount = handTrackedCurveLeft.length;
             int count = 0;
-            int[] validJoints = new int[] {1,3,4,5,6,8,9,10,11,13,14,15,16,18,19,20,21,23,24,25,26};
+            int[] validJoints = new int[] { 1, 3, 4, 5, 6, 8, 9, 10, 11, 13, 14, 15, 16, 18, 19, 20, 21, 23, 24, 25, 26 };
             double[] handJoints = new double[numSteps * validJoints.Length * 2 * 3];
 
             int startTimeIdx;
@@ -601,7 +597,8 @@ namespace Tutorials
             {
                 startTimeIdx = 0;
                 stepCount = keyframeCount;
-            } else
+            }
+            else
             {
                 startTimeIdx = keyframeCount - numSteps;
                 stepCount = numSteps;
@@ -614,9 +611,9 @@ namespace Tutorials
                     var leftData = EvaluateHandJoint(time, Handedness.Left, (TrackedHandJoint)joint);
 
                     handJoints[count] = (double)leftData.posx;
-                    count ++;
+                    count++;
                     handJoints[count] = (double)leftData.posy;
-                    count ++;
+                    count++;
                     handJoints[count] = (double)leftData.posz;
                     count++;
                 }
@@ -625,11 +622,11 @@ namespace Tutorials
                     var rightData = EvaluateHandJoint(time, Handedness.Right, (TrackedHandJoint)joint);
 
                     handJoints[count] = (double)rightData.posx;
-                    count ++;
+                    count++;
                     handJoints[count] = (double)rightData.posy;
-                    count ++;
+                    count++;
                     handJoints[count] = (double)rightData.posz;
-                    count ++;
+                    count++;
                 }
             }
             //handTrackedCurveLeft.keys[1].;
@@ -642,10 +639,10 @@ namespace Tutorials
 
         public double[] EvaluateQRJoint(out int stepCount, int numSteps = 1000)
         {
-            
+
             int keyframeCount = handTrackedCurveLeft.length;
             int count = 0;
-            int[] validJoints = new int[] {1,3,4,5,6,8,9,10,11,13,14,15,16,18,19,20,21,23,24,25,26};
+            int[] validJoints = new int[] { 1, 3, 4, 5, 6, 8, 9, 10, 11, 13, 14, 15, 16, 18, 19, 20, 21, 23, 24, 25, 26 };
             double[] handJoints = new double[numSteps * validJoints.Length * 2 * 3];
 
             int startTimeIdx;
@@ -653,13 +650,14 @@ namespace Tutorials
             {
                 startTimeIdx = 0;
                 stepCount = keyframeCount;
-            } else
+            }
+            else
             {
                 startTimeIdx = keyframeCount - numSteps;
                 stepCount = numSteps;
             }
 
-            
+
 
             for (var stepIdx = 0; stepIdx < stepCount; stepIdx++)
             {
@@ -699,10 +697,10 @@ namespace Tutorials
 
         public float[] EvaluateQRJointFloat(out int stepCount, int numSteps = 1000)
         {
-            
+
             int keyframeCount = handTrackedCurveLeft.length;
             int count = 0;
-            int[] validJoints = new int[] {1,3,4,5,6,8,9,10,11,13,14,15,16,18,19,20,21,23,24,25,26};
+            int[] validJoints = new int[] { 1, 3, 4, 5, 6, 8, 9, 10, 11, 13, 14, 15, 16, 18, 19, 20, 21, 23, 24, 25, 26 };
             float[] handJoints = new float[numSteps * validJoints.Length * 2 * 3];
 
             int startTimeIdx;
@@ -710,13 +708,14 @@ namespace Tutorials
             {
                 startTimeIdx = 0;
                 stepCount = keyframeCount;
-            } else
+            }
+            else
             {
                 startTimeIdx = keyframeCount - numSteps;
-                stepCount = numSteps-1;
+                stepCount = numSteps - 1;
             }
 
-            
+
 
             for (var stepIdx = 0; stepIdx < stepCount; stepIdx++)
             {
@@ -815,7 +814,7 @@ namespace Tutorials
             foreach (var keyframe in recordingBuffer)
             {
                 float localTime = keyframe.Time - startTime;
-                
+
                 animation.HasHandData |= keyframe.LeftTracked | keyframe.RightTracked;
                 AddBoolKey(animation.handTrackedCurveLeft, localTime, keyframe.LeftTracked);
                 AddBoolKey(animation.handTrackedCurveRight, localTime, keyframe.RightTracked);
@@ -823,7 +822,7 @@ namespace Tutorials
                 AddBoolKey(animation.handPinchCurveRight, localTime, keyframe.RightPinch);
                 //AddBoolKey(animation.handGripCurveLeft, localTime, keyframe.LeftGrip);
                 //AddBoolKey(animation.handGripCurveRight, localTime, keyframe.RightGrip);
-                
+
                 /*if (keyframe.HasCameraPose)
                 {
                     animation.HasCameraPose = true;
@@ -833,7 +832,7 @@ namespace Tutorials
                 {
                     animation.HasEyeGaze = true;
                     animation.gazeCurves.AddKey(localTime, keyframe.GazePose);
-                }  */              
+                }  */
 
                 foreach (var joint in (TrackedHandJoint[])Enum.GetValues(typeof(TrackedHandJoint)))
                 {
@@ -884,16 +883,16 @@ namespace Tutorials
                 // Why the next two lines here?
                 //var curves = CurvesFromStream(reader, PoseCurves.CURVE_COUNT);
                 //animation.cameraCurves = PoseCurves.FromAnimationCurves(curves);
-                float[] val = new float[10];
+                float[] val = new float[17];
                 var poseString = reader.ReadLine().Split(',');
-                for(int i = 0; i < 10; i++)
+                for (int i = 0; i < 17; i++)
                 {
                     val[i] = float.Parse(poseString[i]);
                 }
-                TransformData aspor = new TransformData(val[0], val[1], val[2], val[3], val[4], val[5], val[6], val[7], val[8], val[9]); //, val[10], val[11], val[12], val[13], val[14], val[15], val[16], val[17], val[18], val[19]);
+                TransformData aspor = new TransformData(val[0], val[1], val[2], val[3], val[4], val[5], val[6], val[7], val[8], val[9], val[10], val[11], val[12], val[13], val[14], val[15], val[16]); //, val[17], val[18], val[19]);
                 //Vector3 qrPosition = new Vector3(val[0], val[1], val[2]);
                 //Quaternion qrRotation = new Quaternion(val[3], val[4], val[5], val[6]);
-                
+
                 //animation.qrCoordinate = new MixedRealityPose(qrPosition, qrRotation);
                 // aspor is not used currently
             }
@@ -906,7 +905,7 @@ namespace Tutorials
                 var curves = CurvesFromStream(reader, PoseCurves.CURVE_COUNT);
                 animation.cameraCurves = PoseCurves.FromAnimationCurves(curves);
             }
-            
+
             header = reader.ReadLine();
             if (header != "LEFT_HAND_POSES")
             {
@@ -1025,7 +1024,7 @@ namespace Tutorials
             foreach (var curve in GetAllAnimationCurves())
             {
                 if(curve.length > 0)
-                latest = Mathf.Max(latest, curve.keys[curve.length - 1].time);
+                    latest = Mathf.Max(latest, curve.keys[curve.length - 1].time);
             }
             return latest;
         }

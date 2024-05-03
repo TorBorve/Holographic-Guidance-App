@@ -109,14 +109,18 @@ namespace Tutorials
             {
                 if (animation == null)
                 {
-                    try
-                    {
+                    //try
+                    //{
                         animation = FileHandler.LoadAnimationFromLocalBlobFile(Name);
-                    }
-                    catch (Exception e)
+                    //}
+                    //catch (Exception e)
+                    //{
+                    //    Debug.Log(e.Message + "Animation " + Name + " could not be loaded.");
+                    //    return null;
+                    //}
+                    if (animation == null)
                     {
-                        Debug.Log(e.Message + "Animation " + Name + " could not be loaded.");
-                        return null;
+                        Debug.LogError("Animation is null");
                     }
                 }
 

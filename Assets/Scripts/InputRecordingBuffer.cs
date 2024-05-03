@@ -26,9 +26,18 @@ namespace Tutorials
         public float scaley;
         public float scalez;
 
+        public float globPosx;
+        public float globPosy;
+        public float globPosz;
+
+        public float globRotx;
+        public float globRoty;
+        public float globRotz;
+        public float globRotw;
+
         public static TransformData ZeroIdentity()
         {
-            return new TransformData(0, 0, 0, 0, 0, 0, 1, 1, 1, 1);
+            return new TransformData(0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1);
         }
 
         public TransformData(Transform transform)
@@ -45,18 +54,59 @@ namespace Tutorials
             scalex = transform.localScale.x;
             scaley = transform.localScale.y;
             scalez = transform.localScale.z;
+
+            globPosx = transform.position.x;
+            globPosy = transform.position.y;
+            globPosz = transform.position.z;
+
+            globRotx = transform.rotation.x;
+            globRoty = transform.rotation.y;
+            globRotz = transform.rotation.z;
+            globRotw = transform.rotation.w;
         }
 
+        //public TransformData(float posx,
+        //                     float posy,
+        //                     float posz,
+        //                     float rotx,
+        //                     float roty,
+        //                     float rotz,
+        //                     float rotw,
+        //                     float scalex,
+        //                     float scaley,
+        //                     float scalez)
+        //{
+        //    this.posx = posx;
+        //    this.posy = posy;
+        //    this.posz = posz;
+
+        //    this.rotx = rotx;
+        //    this.roty = roty;
+        //    this.rotz = rotz;
+        //    this.rotw = rotw;
+
+        //    this.scalex = scalex;
+        //    this.scaley = scaley;
+        //    this.scalez = scalez;
+        //}
+
         public TransformData(float posx,
-                             float posy,
-                             float posz,
-                             float rotx,
-                             float roty,
-                             float rotz,
-                             float rotw,
-                             float scalex,
-                             float scaley,
-                             float scalez)
+                            float posy,
+                            float posz,
+                            float rotx,
+                            float roty,
+                            float rotz,
+                            float rotw,
+                            float scalex,
+                            float scaley,
+                            float scalez,
+                            float globPosx,
+                            float globPosy,
+                            float globPosz,
+                            float globRotx,
+                            float globRoty,
+                            float globRotz,
+                            float globRotw)
         {
             this.posx = posx;
             this.posy = posy;
@@ -70,6 +120,15 @@ namespace Tutorials
             this.scalex = scalex;
             this.scaley = scaley;
             this.scalez = scalez;
+
+            this.globPosx = globPosx;
+            this.globPosy = globPosy;
+            this.globPosz = globPosz;
+
+            this.globRotx = globRotx;
+            this.globRoty = globRoty;
+            this.globRotz = globRotz;
+            this.globRotw = globRotw;
         }
 
         /// <summary>
@@ -80,12 +139,22 @@ namespace Tutorials
             return new Vector3(posx, posy, posz);
         }
 
+        public Vector3 GetGlobalPosition()
+        {
+            return new Vector3(globPosx, globPosy, globPosz);
+        }
+
         /// <summary>
         /// Gets the rotation as a Quaternion
         /// </summary>
         public Quaternion GetRotation()
         {
             return new Quaternion(rotx, roty, rotz, rotw);
+        }
+
+        public Quaternion GetGlobalRotation()
+        {
+            return new Quaternion(globRotx, globRoty, globRotz, globRotw);
         }
 
         /// <summary>

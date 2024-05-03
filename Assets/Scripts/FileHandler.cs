@@ -122,7 +122,11 @@ namespace Tutorials
         /// <returns>If file was successfully retrieved, the animation is returned. Otherwise, null is returned</returns>
         public static InputAnimation LoadAnimationFromLocalBlobFile(string blobFileName)
         {
-            if (!CheckIfBlobFileExistsLocally(blobFileName)) return null;
+            if (!CheckIfBlobFileExistsLocally(blobFileName))
+            {
+                Debug.LogError("Could not find blob file: " + blobFileName);
+                return null;
+            }
 
             if (blobFileName != null && blobFileName.Length > 0)
             {
@@ -148,7 +152,11 @@ namespace Tutorials
 
         public static InputAnimation LoadAnimationFromTXTFile(string blobFileName)
         {
-            if (!CheckIfTXTFileExistsLocally(blobFileName)) return null;
+            if (!CheckIfTXTFileExistsLocally(blobFileName))
+            {
+                Debug.LogError("File does not exist: " + blobFileName);
+                return null;
+            }
 
             if (blobFileName != null && blobFileName.Length > 0)
             {
