@@ -454,7 +454,7 @@ namespace Tutorials
             float[] rawSpeed = new float[dataPoints.Count() - 1];
 
             for (int i = 0; i < rawSpeed.Count(); i++) {
-                rawSpeed[i] = CalSpeed(dataPoints[i], dataPoints[i+1]);
+                rawSpeed[i] = CalcSpeed(dataPoints[i], dataPoints[i+1], Handedness.Right);
             }
 
 
@@ -468,18 +468,34 @@ namespace Tutorials
                 totalSpeedOverWindow -= 
             }          
             
-        } 
-
-        private void CalSpeed (DataPoint obt1, DataPoint obt2, Handedness hand, float alpha) {
-            var dist = null;
-            switch (hand) {
-                case: Handedness.Right
-                    dist = obt1.rightHand.wristPos.Position - obt2.rightHand.wristPos.Position; 
-                break;
-                case: Handedness.Left
-                    dist = obt1.leftHand.wristPos.Position - obt2.leftHand.wristPos.Position;
-                break;
-            }
-            
         }
-}
+
+        private float CalcSpeed(DataPoint point1, DataPoint point2, Handedness hand)
+        {
+            MixedRealityPose wristPose1, wristPose2;
+
+            switch (hand)
+            {
+                case Handedness.Right:
+                    wristPose1 = point1.rightHand[TrackedHandJoint.Wrist];
+                    wristPose2 = point2.rightHand[TrackedHandJoint.Wrist];
+                    break;
+                case Handedness.Left:
+                    wristPose1 = point1.leftHand[TrackedHandJoint.Wrist];
+                    wristPose2 = point2.leftHand[TrackedHandJoint.Wrist];
+                    break;
+                default:
+                    throw new ArgumentException("Invalid hand type specified.");
+            }
+
+            Vector3 position1 = wristPose1.Position;
+            Vector3 position2 = wristPose2.Position;
+            float distance = Vector3.Distance(position1, position2);
+
+            float timeDifference = point2.timeStamp - point1.timeStamp;
+
+            float speed = distance / timeDifference;
+
+            return speed;
+        }
+    }
