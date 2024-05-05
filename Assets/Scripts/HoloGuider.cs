@@ -24,8 +24,8 @@ namespace Tutorials
 
         private float _guidanceSpeed = 0f;
         private static readonly float MAX_GUIDANCE_SPEED = 1f;
-        private static readonly float MAX_ACCELERATION = 1/1.5f;
-        private static readonly float MIN_ACCELERATION = -1/1f;
+        private static readonly float MAX_ACCELERATION = 1 / 1.5f;
+        private static readonly float MIN_ACCELERATION = -1 / 1f;
 
         private float _estimatedTime = 0f;
 
@@ -63,70 +63,7 @@ namespace Tutorials
 
         public float UpdateTime(float time)
         {
-            // var handInput = new Tuple<InputSourceType, Handedness>(InputSourceType.Controller, Handedness.Right);
-            // _debugger.logInfo("handInput: "+handInput.ToString());
-            _estimatedTime = time;
             UpdateTrackedHandState();
-            {
-                    DataPoint currentDataPoint = _recordingData.InterpolateDataAtTime(_estimatedTime);
-                    FingerAndWristData recData = new FingerAndWristData(currentDataPoint.rightHand);
-                    _debugger.logInfo("Rec: " + recData.ToString());
-                    float dist0 = FingerAndWristData.Distance(recData, recData);
-                    _debugger.logInfo("Dist0: " + dist0);
-                if (_rightHand != null) {
-                    FingerAndWristData trackData = new FingerAndWristData(_rightHand);
-                    _debugger.logInfo("Tracked: "+ trackData.ToString());
-                    float dist = FingerAndWristData.Distance(recData, trackData);
-                    _debugger.logInfo("Dist: " + dist.ToString());
-                }
-            }
-            // {
-            //     var handInput = new Tuple<InputSourceType, Handedness>(InputSourceType.Controller, Handedness.Right);
-            //     _debugger.logInfo("handInput: "+handInput.ToString())
-            //     if (_rightHand != null && _rightHand.TryGetJoint(TrackedHandJoint.Wrist, out MixedRealityPose palmPose))
-            //     {
-            //         _debugger.logInfo("t wrist: " + (100 * palmPose.Position).ToString() + " rot: " + palmPose.Rotation.ToString());
-            //     }
-            //     DataPoint currentDataPoint = _recordingData.InterpolateDataAtTime(_estimatedTime);
-            //     MixedRealityPose wrist = currentDataPoint.rightHand[TrackedHandJoint.Wrist];
-            //     wrist.Position *= 100;
-            //     _debugger.logInfo("r Wrist: " + wrist.ToString());
-            //     if (_rightHand != null && _rightHand.TryGetJoint(TrackedHandJoint.ThumbTip, out MixedRealityPose thumbPose))
-            //     {
-            //         _debugger.logInfo("t thumb: " + (100 * thumbPose.Position).ToString());
-            //     }
-            //     MixedRealityPose thumb = currentDataPoint.rightHand[TrackedHandJoint.ThumbTip];
-            //     thumb.Position *= 100;
-            //     _debugger.logInfo("r thumb: " + thumb.ToString());
-            //     if (_rightHand != null && _rightHand.TryGetJoint(TrackedHandJoint.IndexTip, out MixedRealityPose indexPose))
-            //     {
-            //         _debugger.logInfo("t index: " + (100 * indexPose.Position).ToString());
-            //     }
-            //     MixedRealityPose index = currentDataPoint.rightHand[TrackedHandJoint.IndexTip];
-            //     index.Position *= 100;
-            //     _debugger.logInfo("r index: " + index.Position.ToString());
-            //     if (_rightHand != null && _rightHand.TryGetJoint(TrackedHandJoint.MiddleTip, out MixedRealityPose middlePose))
-            //     {
-            //         _debugger.logInfo("t middle: " + (100 * middlePose.Position).ToString());
-            //     }
-            //     MixedRealityPose middle = currentDataPoint.rightHand[TrackedHandJoint.MiddleTip];
-            //     middle.Position *= 100;
-            //     _debugger.logInfo("r middle: " + middle.Position.ToString());
-            //     if (_rightHand != null && _rightHand.TryGetJoint(TrackedHandJoint.RingTip, out MixedRealityPose ringPose))
-            //     {
-            //         _debugger.logInfo("t ring: " + (100 * ringPose.Position).ToString());
-            //     }
-            //     MixedRealityPose ring = currentDataPoint.rightHand[TrackedHandJoint.RingTip];
-            //     ring.Position *= 100;
-            //     _debugger.logInfo("r ring: " + ring.Position.ToString());
-            //     if (_rightHand != null && _rightHand.TryGetJoint(TrackedHandJoint.PinkyTip, out MixedRealityPose pinkyPose))
-            //     {
-            //         _debugger.logInfo("t pinky: " + (100 * pinkyPose.Position).ToString());
-            //     }
-            //     MixedRealityPose pinky = currentDataPoint.rightHand[TrackedHandJoint.PinkyTip];
-            //     pinky.Position *= 100;
-            //     _debugger.logInfo("r pinky: " + pinky.Position.ToString());
-            // }
             float visalizeTime = _estimatedTime;
             switch (_state)
             {
@@ -140,13 +77,13 @@ namespace Tutorials
                     }
                     break;
                 case State.Preview:
-                    visalizeTime += 0.0f*Time.deltaTime;
+                    visalizeTime += 1.0f * Time.deltaTime;
                     if (visalizeTime >= _recordingData.GetEndTime())
                     {
                         visalizeTime = _recordingData.GetStartTime();
                         Debug.Log("Changing to Following State");
                         _debugger.logInfo("Changing to Following State");
-                        //_state = State.Following;
+                        _state = State.Following;
                     }
                     _estimatedTime = visalizeTime;
                     break;
@@ -166,73 +103,76 @@ namespace Tutorials
                     Debug.LogError("Invalid state in HoloGuider");
                     break;
             }
-            return time;
-            //return visalizeTime;
+            //return time;
+            return visalizeTime;
         }
 
         private float FollowingUpdate()
         {
             {
-                var handInput = new Tuple<InputSourceType, Handedness>(InputSourceType.Controller, Handedness.Right);
-                DataPoint currentDataPoint = _recordingData.InterpolateDataAtTime(_estimatedTime);
-                if (_rightHand != null && _rightHand.TryGetJoint(TrackedHandJoint.Palm, out MixedRealityPose palmPose))
+                float updatedEstimatedTime = _estimatedTime;
+                if (_rightHand != null && _rightHand.TryGetJoint(TrackedHandJoint.Wrist, out MixedRealityPose jointPose))
                 {
-                    _debugger.logInfo(handInput.ToString());
-                    _debugger.logInfo("t palm: " + (1000 * palmPose.Position).ToString());
-                }
-                if (_rightHand != null && _rightHand.TryGetJoint(TrackedHandJoint.ThumbTip, out MixedRealityPose thumbPose))
-                {
-                    _debugger.logInfo("t thumb: " + (1000 * thumbPose.Position).ToString());
-                }
-                if (_rightHand != null && _rightHand.TryGetJoint(TrackedHandJoint.PinkyTip, out MixedRealityPose pinkyPose))
-                {
-                    _debugger.logInfo("t Pinky: " + (1000 * pinkyPose.Position).ToString());
-                }
-            }
-            {
-                DataPoint currentDataPoint = _recordingData.InterpolateDataAtTime(_estimatedTime);
-                if (currentDataPoint.rightHand.TryGetValue(TrackedHandJoint.Palm, out MixedRealityPose palmPose))
-                {
-                    _debugger.logInfo("rec palm: " + (1000 * palmPose.Position).ToString());
-                }
-                if (currentDataPoint.rightHand.TryGetValue(TrackedHandJoint.ThumbTip, out MixedRealityPose thumbPose))
-                {
-                    _debugger.logInfo("rec thumb: " + (1000 * thumbPose.Position).ToString());
-                }
-                if (currentDataPoint.rightHand.TryGetValue(TrackedHandJoint.PinkyTip, out MixedRealityPose pinkyPose))
-                {
-                    _debugger.logInfo("rec Pinky: " + (1000 * pinkyPose.Position).ToString());
-                }
-            }
-            float updatedEstimatedTime = _estimatedTime;
-            if (_rightHand != null && _rightHand.TryGetJoint(TrackedHandJoint.Wrist, out MixedRealityPose jointPose))
-            {
-                Vector3 trackedPos = jointPose.Position;
-                DataPoint currentDataPoint = _recordingData.InterpolateDataAtTime(_estimatedTime);
-                Vector3 recordedPos = currentDataPoint.rightHand[TrackedHandJoint.Wrist].Position;
-                float dist = (trackedPos - recordedPos).magnitude;
-                _debugger.logInfo("Track: " + trackedPos.ToString() + "Rec: " + recordedPos.ToString() + " dist: " + dist.ToString());
-                
-                // Sigmoid for smoth acceleration, alpha = 1 => max_acceleration, alpha = 0 => max_decelleration
-                float alpha = (float)(1 - 1 / (1 + Math.Exp(-20 * (dist - 0.30f))));
-                float acceleration = MIN_ACCELERATION + alpha * (MAX_ACCELERATION - MIN_ACCELERATION);
-                // _debugger.logInfo("Acc: " + acceleration.ToString());
-                _guidanceSpeed += Time.deltaTime * acceleration;
-                _guidanceSpeed = Math.Max(0, Math.Min(_guidanceSpeed, MAX_GUIDANCE_SPEED));
-                updatedEstimatedTime += _guidanceSpeed * Time.deltaTime;
-            } else
-            {
-                _debugger.logWarn("Hand not tracked");
-                _guidanceSpeed = Math.Max(_guidanceSpeed + Time.deltaTime * MIN_ACCELERATION, 0f);
-                updatedEstimatedTime += _guidanceSpeed * Time.deltaTime;
-            }
-            _estimatedTime = updatedEstimatedTime;
+                    Vector3 trackedPos = jointPose.Position;
+                    DataPoint currentDataPoint = _recordingData.InterpolateDataAtTime(_estimatedTime);
+                    FingerAndWristData currentFingerData = new FingerAndWristData(currentDataPoint.rightHand);
+                    FingerAndWristData recFingerData = new FingerAndWristData(_rightHand);
+                    float dist = FingerAndWristData.Distance(currentFingerData, recFingerData);
 
-            float secAhead = 0.3f;
-            float visualizeTime = updatedEstimatedTime + secAhead * _guidanceSpeed;
-            visualizeTime = Math.Min(visualizeTime, _recordingData.GetEndTime());
-            return visualizeTime;
+                    float max_hand_precision_tolerance = 0.1f;
+                    float max_hand_precision_speed = 0.05f;
+                    float min_hand_precision_tolerance = 0.4f;
+                    float min_hand_precision_speed = 1f;
+
+                    float rec_speed = currentDataPoint.rightSpeed;
+                    float alpha_speed = Math.Min(Math.Max((rec_speed - max_hand_precision_speed) / (min_hand_precision_speed - max_hand_precision_speed), 0f), 1f);
+                    float required_precision = alpha_speed * (min_hand_precision_tolerance - max_hand_precision_tolerance) + max_hand_precision_tolerance;
+
+                    float acceleration = 0f;
+                    if (dist < required_precision) // Then accelerate
+                    {
+                        float max_accel_dist = 1f / 2 * required_precision;
+                        float alpha_acceleration = (dist - required_precision) / (max_accel_dist - required_precision);
+                        alpha_acceleration = Math.Min(Math.Max(alpha_acceleration, 0), 1);
+                        _debugger.logInfo("Accelerating, alpha: " + alpha_acceleration.ToString());
+                        acceleration = MAX_ACCELERATION * alpha_acceleration;
+                    } else // Then decelerate
+                    {
+                        float min_accel_dist = 2 * required_precision;
+                        // dist == requride => alpha = 0, dist = min_accel_dist -> alpha = 1
+                        float alpha_acceleration = (dist - required_precision) / (min_accel_dist - required_precision);
+                        alpha_acceleration = Math.Min(Math.Max(alpha_acceleration, 0), 1);
+                        _debugger.logInfo("Decelerating, alpha: " + alpha_acceleration.ToString());
+                        acceleration = MIN_ACCELERATION * alpha_acceleration;
+                    }
+
+                    string msg = "Dist: " + dist.ToString() + ", req_dist: " + required_precision.ToString() + ", Accel: " + acceleration.ToString();
+                    _debugger.logInfo(msg);
+                    Debug.Log(msg);
+
+
+                    // Sigmoid for smoth acceleration, alpha = 1 => max_acceleration, alpha = 0 => max_decelleration
+                    //float alpha = (float)(1 - 1 / (1 + Math.Exp(-20 * (dist - 0.30f))));
+                    //float acceleration = MIN_ACCELERATION + alpha * (MAX_ACCELERATION - MIN_ACCELERATION);
+                    // _debugger.logInfo("Acc: " + acceleration.ToString());
+                    _guidanceSpeed += Time.deltaTime * acceleration;
+                    _guidanceSpeed = Math.Max(0, Math.Min(_guidanceSpeed, MAX_GUIDANCE_SPEED));
+                    updatedEstimatedTime += _guidanceSpeed * Time.deltaTime;
+                }
+                else
+                {
+                    _debugger.logWarn("Hand not tracked");
+                    _guidanceSpeed = Math.Max(_guidanceSpeed + Time.deltaTime * MIN_ACCELERATION, 0f);
+                    updatedEstimatedTime += _guidanceSpeed * Time.deltaTime;
+                }
+                _estimatedTime = updatedEstimatedTime;
+
+                float secAhead = 0.1f;
+                float visualizeTime = updatedEstimatedTime + secAhead * _guidanceSpeed;
+                visualizeTime = Math.Min(visualizeTime, _recordingData.GetEndTime());
+                return visualizeTime;
+            }
+
         }
-
     }
 }

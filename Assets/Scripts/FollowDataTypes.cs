@@ -16,9 +16,9 @@ namespace Tutorials
         public bool leftIsTracked;
         public bool rightIsTracked;
         public Dictionary<TrackedHandJoint, MixedRealityPose> leftHand;
-        public float speedLeft;
+        public float leftSpeed;
         public Dictionary<TrackedHandJoint, MixedRealityPose> rightHand;
-        public float speedRight;
+        public float rightSpeed;
 
         public DataPoint() : this(0f) { }
 
@@ -28,9 +28,9 @@ namespace Tutorials
             leftIsTracked = false;
             rightIsTracked = false;
             leftHand = new Dictionary<TrackedHandJoint, MixedRealityPose>();
-            speedLeft = 1f;
+            leftSpeed = 0f;
             rightHand = new Dictionary<TrackedHandJoint, MixedRealityPose>();
-            speedRight = 1f;
+            rightSpeed = 0f;
         }
 
         public static DataPoint Interpolate(DataPoint firstDataPoint, DataPoint secondDataPoint, float alpha)
@@ -41,36 +41,40 @@ namespace Tutorials
             {
                 interpolatedDataPoint.leftHand = secondDataPoint.leftHand;
                 interpolatedDataPoint.leftIsTracked = secondDataPoint.leftIsTracked;
-                interpolatedDataPoint.speedLeft = secondDataPoint.speedLeft;
-            } else if (!secondDataPoint.leftIsTracked)
+                interpolatedDataPoint.leftSpeed = secondDataPoint.leftSpeed;
+            }
+            else if (!secondDataPoint.leftIsTracked)
             {
                 interpolatedDataPoint.leftHand = firstDataPoint.leftHand;
                 interpolatedDataPoint.leftIsTracked = firstDataPoint.leftIsTracked;
-                interpolatedDataPoint.speedLeft = firstDataPoint.speedLeft;
-            } else
+                interpolatedDataPoint.leftSpeed = firstDataPoint.leftSpeed;
+            }
+            else
             {
                 interpolatedDataPoint.leftIsTracked = true;
                 interpolatedDataPoint.leftHand = InterpolateJoints(firstDataPoint.leftHand, secondDataPoint.leftHand, alpha);
-                interpolatedDataPoint.speedLeft = InterpolateSpeed(firstDataPoint.speedLeft, secondDataPoint.speedLeft, alpha);
+                interpolatedDataPoint.leftSpeed = InterpolateSpeed(firstDataPoint.leftSpeed, secondDataPoint.leftSpeed, alpha);
             }
 
             if (!firstDataPoint.rightIsTracked)
             {
                 interpolatedDataPoint.rightHand = secondDataPoint.rightHand;
                 interpolatedDataPoint.rightIsTracked = secondDataPoint.rightIsTracked;
-                interpolatedDataPoint.speedRight = secondDataPoint.speedRight;
-            } else if (!secondDataPoint.rightIsTracked)
+                interpolatedDataPoint.rightSpeed = secondDataPoint.rightSpeed;
+            }
+            else if (!secondDataPoint.rightIsTracked)
             {
                 interpolatedDataPoint.rightHand = firstDataPoint.rightHand;
                 interpolatedDataPoint.rightIsTracked = firstDataPoint.rightIsTracked;
-                interpolatedDataPoint.speedLeft = firstDataPoint.speedRight;
-            } else
+                interpolatedDataPoint.rightSpeed = firstDataPoint.rightSpeed;
+            }
+            else
             {
                 interpolatedDataPoint.rightIsTracked = true;
                 interpolatedDataPoint.rightHand = InterpolateJoints(firstDataPoint.rightHand, secondDataPoint.rightHand, alpha);
-                interpolatedDataPoint.speedLeft = InterpolateSpeed(firstDataPoint.speedRight, secondDataPoint.speedRight, alpha)
+                interpolatedDataPoint.rightSpeed = InterpolateSpeed(firstDataPoint.rightSpeed, secondDataPoint.rightSpeed, alpha);
             }
-            return interpolatedDataPoint;          
+            return interpolatedDataPoint;
         }
 
         private static Dictionary<TrackedHandJoint, MixedRealityPose> InterpolateJoints(Dictionary<TrackedHandJoint, MixedRealityPose> firstJoints, Dictionary<TrackedHandJoint, MixedRealityPose> secondJoints, float alpha)
@@ -95,7 +99,8 @@ namespace Tutorials
             return result;
         }
 
-        private static float InterpolateSpeed(float firstSpeed, float secondSpeed, float alpha) {
+        private static float InterpolateSpeed(float firstSpeed, float secondSpeed, float alpha)
+        {
             return firstSpeed + alpha * (secondSpeed - firstSpeed);
         }
 
@@ -119,6 +124,38 @@ namespace Tutorials
                 MRPoseDict.Add(jointType, MRPose);
             }
             return MRPoseDict;
+        }
+
+        public static float CalcSpeed(DataPoint point1, DataPoint point2, Handedness hand)
+        {
+            MixedRealityPose wristPose1, wristPose2;
+
+            switch (hand)
+            {
+                case Handedness.Right:
+                    wristPose1 = point1.rightHand[TrackedHandJoint.Wrist];
+                    wristPose2 = point2.rightHand[TrackedHandJoint.Wrist];
+                    break;
+                case Handedness.Left:
+                    wristPose1 = point1.leftHand[TrackedHandJoint.Wrist];
+                    wristPose2 = point2.leftHand[TrackedHandJoint.Wrist];
+                    break;
+                default:
+                    throw new ArgumentException("Invalid hand type specified.");
+            }
+
+            Vector3 position1 = wristPose1.Position;
+            Vector3 position2 = wristPose2.Position;
+            float distance = Vector3.Distance(position1, position2);
+
+            float timeDifference = point2.timeStamp - point1.timeStamp;
+            if (timeDifference == 0)
+            {
+                timeDifference = 1f / 60; // assume 60fps
+            }
+
+            float speed = distance / timeDifference;
+            return speed;
         }
     }
 
@@ -157,44 +194,65 @@ namespace Tutorials
             pinkyPosition = handDict[TrackedHandJoint.PinkyTip].Position;
         }
 
-        public FingerAndWristData(IMixedRealityHand hand) {
+        public FingerAndWristData(IMixedRealityHand hand)
+        {
             bool success = true;
-            if(hand.TryGetJoint(TrackedHandJoint.Wrist, out MixedRealityPose wristPose)){
-                wristPosition = wristPose.Position;                
-            } else {
+            if (hand.TryGetJoint(TrackedHandJoint.Wrist, out MixedRealityPose wristPose))
+            {
+                wristPosition = wristPose.Position;
+            }
+            else
+            {
                 success = false;
             }
-            if(hand.TryGetJoint(TrackedHandJoint.ThumbTip, out MixedRealityPose thumbPose)) {
+            if (hand.TryGetJoint(TrackedHandJoint.ThumbTip, out MixedRealityPose thumbPose))
+            {
                 thumbPosition = thumbPose.Position;
-            } else {
+            }
+            else
+            {
                 success = false;
             }
-            if(hand.TryGetJoint(TrackedHandJoint.IndexTip, out MixedRealityPose indexPose)) {
+            if (hand.TryGetJoint(TrackedHandJoint.IndexTip, out MixedRealityPose indexPose))
+            {
                 indexPosition = indexPose.Position;
-            } else {
+            }
+            else
+            {
                 success = false;
             }
-            if(hand.TryGetJoint(TrackedHandJoint.MiddleTip, out MixedRealityPose middlePose)) {
+            if (hand.TryGetJoint(TrackedHandJoint.MiddleTip, out MixedRealityPose middlePose))
+            {
                 middlePosition = middlePose.Position;
-            } else {
+            }
+            else
+            {
                 success = false;
             }
-            if(hand.TryGetJoint(TrackedHandJoint.RingTip, out MixedRealityPose ringPose)){
+            if (hand.TryGetJoint(TrackedHandJoint.RingTip, out MixedRealityPose ringPose))
+            {
                 ringPosition = ringPose.Position;
-            } else {
+            }
+            else
+            {
                 success = false;
             }
-            if(hand.TryGetJoint(TrackedHandJoint.PinkyTip, out MixedRealityPose pinkyPose)){
+            if (hand.TryGetJoint(TrackedHandJoint.PinkyTip, out MixedRealityPose pinkyPose))
+            {
                 pinkyPosition = pinkyPose.Position;
-            } else {
+            }
+            else
+            {
                 success = false;
             }
-            if (!success) {
+            if (!success)
+            {
                 Debug.LogError("Could not get all joint from hand");
                 throw new Exception("Could not get all joints from hand");
             }
         }
-        public override string ToString() {
+        public override string ToString()
+        {
             string txt = "";
             txt += "Wrist: " + wristPosition.ToString();
             txt += ", Thumb: " + thumbPosition.ToString();
@@ -203,15 +261,17 @@ namespace Tutorials
             txt += ", Ring: " + ringPosition.ToString();
             txt += ", Pinky: " + pinkyPosition.ToString();
             return txt;
-        } 
+        }
 
         public static float Distance(FingerAndWristData a, FingerAndWristData b, float[] weight = null)
         {
             const int N_dim = 6;
-            if (weight == null) {
-                weight = new float[N_dim]{1f/N_dim, 1f/N_dim, 1f/N_dim, 1f/N_dim, 1f/N_dim, 1f/N_dim};   
+            if (weight == null)
+            {
+                weight = new float[N_dim] { 1f / N_dim, 1f / N_dim, 1f / N_dim, 1f / N_dim, 1f / N_dim, 1f / N_dim };
             }
-            if (weight.Count() != N_dim) {
+            if (weight.Count() != N_dim)
+            {
                 Debug.LogError("Invalid Weight list");
                 throw new Exception("Invalid Weights for distance caluculation");
             }
@@ -228,7 +288,6 @@ namespace Tutorials
     public class RecordingData
     {
         private List<DataPoint> dataPoints;
-        public List<float> estimatedSpeed;
 
         public RecordingData()
         {
@@ -238,16 +297,7 @@ namespace Tutorials
         public RecordingData(List<DataPoint> dataPoints)
         {
             this.dataPoints = new List<DataPoint>(dataPoints);
-        }
-
-        public void AddDataPoint(DataPoint dataPoint)
-        {
-            if (dataPoints.Count > 0 && dataPoint.timeStamp < dataPoints[
-                dataPoints.Count - 1].timeStamp)
-            {
-                throw new Exception("DataPoint is out of date.");
-            }
-            dataPoints.Add(dataPoint);
+            UpdateSpeedEstimates();
         }
 
         public float GetEndTime()
@@ -298,7 +348,8 @@ namespace Tutorials
                 if (queryTime > dataPoints[mid].timeStamp)
                 {
                     first = mid + 1;
-                } else
+                }
+                else
                 {
                     last = mid - 1;
                 }
@@ -324,10 +375,12 @@ namespace Tutorials
             if (firstTime == secondTime)
             {
                 return dataPoints[firstIndex];
-            } else if (firstTime >= time)
+            }
+            else if (firstTime >= time)
             {
                 return dataPoints[firstIndex];
-            } else if (secondTime <= time)
+            }
+            else if (secondTime <= time)
             {
                 return dataPoints[secondIndex];
             }
@@ -369,7 +422,7 @@ namespace Tutorials
             int num_joints = Enum.GetNames(typeof(TrackedHandJoint)).Length;
             for (int j = 1; j < num_joints; ++j)
             {
-                { 
+                {
                     if (!handJointCurvesLeft.TryGetValue((TrackedHandJoint)j, out var curves))
                     {
                         throw new Exception("Joint Not present in data: " + (TrackedHandJoint)j);
@@ -435,67 +488,72 @@ namespace Tutorials
             return recordingData;
         }
 
-        public static RecordingData FromRecordingBuffer(InputRecordingBuffer recordingBuffer)
+        private void UpdateSpeedEstimates()
         {
-            RecordingData recordingData = new RecordingData();
-            foreach (InputRecordingBuffer.Keyframe keyframe in recordingBuffer)
+            float[] leftSpeed = UpdateSpeedEstimateHand(Handedness.Left);
+            float[] rightSpeed = UpdateSpeedEstimateHand(Handedness.Right);
+
+            Debug.Log("Checking Speed");
+            string msg = "";
+            for (int i = 0; i < rightSpeed.Count(); i++)
             {
-                DataPoint dataPoint = DataPoint.FromKeyframe(keyframe);
-                recordingData.AddDataPoint(dataPoint);
+                if (rightSpeed[i] == 3f)
+                {
+                    Debug.Log("Speed is three at: " + i.ToString());
+                }
+                msg += rightSpeed[i].ToString() + ", ";
             }
-            return recordingData;
+            Debug.Log(msg);
+
+            if (leftSpeed.Count() != dataPoints.Count() || rightSpeed.Count() != dataPoints.Count())
+            {
+                throw new Exception("Mismatch in length of speed estimates and datapoints");
+            }
+
+            for (int i = 0; i < dataPoints.Count(); i++)
+            {
+                dataPoints[i].leftSpeed = leftSpeed[i];
+                dataPoints[i].rightSpeed = rightSpeed[i];
+            }
         }
 
-        private void UpdateSpeedEstimate() {
-            if (dataPoints.Count() < 3) {
-                return;
+        private float[] UpdateSpeedEstimateHand(Handedness handedness)
+        {
+            if (dataPoints.Count() < 3)
+            {
+                throw new Exception("To few datapoints");
             }
             float[] newSpeedEst = new float[dataPoints.Count()];
             float[] rawSpeed = new float[dataPoints.Count() - 1];
 
-            for (int i = 0; i < rawSpeed.Count(); i++) {
-                rawSpeed[i] = CalcSpeed(dataPoints[i], dataPoints[i+1], Handedness.Right);
-            }
-
-
-            int halfWindowSize = Math.Min((dataPoints.Count()-1)/2, 5);
-            // speed = 1/3(rawSpeed[-1] + rawSpeed[0] + rawSpeed[1])
-            float totalSpeedOverWindow = 0;
-            for (int i = 0; i < 2*halfWindowSize + 1; i++) {
-                // totalSpeedOverWindow += CalcSpeed();
-            }
-            for (int i = halfWindowSize + 1; i < dataPoints.Count() - halfWindowSize; i++) {
-                totalSpeedOverWindow -= 
-            }          
-            
-        }
-
-        private float CalcSpeed(DataPoint point1, DataPoint point2, Handedness hand)
-        {
-            MixedRealityPose wristPose1, wristPose2;
-
-            switch (hand)
+            for (int i = 0; i < rawSpeed.Count(); i++)
             {
-                case Handedness.Right:
-                    wristPose1 = point1.rightHand[TrackedHandJoint.Wrist];
-                    wristPose2 = point2.rightHand[TrackedHandJoint.Wrist];
-                    break;
-                case Handedness.Left:
-                    wristPose1 = point1.leftHand[TrackedHandJoint.Wrist];
-                    wristPose2 = point2.leftHand[TrackedHandJoint.Wrist];
-                    break;
-                default:
-                    throw new ArgumentException("Invalid hand type specified.");
+                rawSpeed[i] = DataPoint.CalcSpeed(dataPoints[i], dataPoints[i + 1], handedness);
             }
 
-            Vector3 position1 = wristPose1.Position;
-            Vector3 position2 = wristPose2.Position;
-            float distance = Vector3.Distance(position1, position2);
+            int half_window_size = Math.Min((dataPoints.Count() - 1) / 2, 5);
+            int window_size = 2 * half_window_size + 1;
 
-            float timeDifference = point2.timeStamp - point1.timeStamp;
+            for (int i = half_window_size; i < rawSpeed.Count() - half_window_size; i++)
+            {
+                float sum = 0f;
+                for (int j = -half_window_size; j <= half_window_size; j++)
+                {
+                    sum += rawSpeed[i + j];
+                }
+                newSpeedEst[i] = (1f / window_size) * sum;
+            }
 
-            float speed = distance / timeDifference;
-
-            return speed;
+            // Pad speed at front and rear
+            for (int i = 0; i < half_window_size; i++)
+            {
+                newSpeedEst[i] = newSpeedEst[half_window_size];
+            }
+            for (int i = rawSpeed.Count() - half_window_size; i < newSpeedEst.Count(); i++)
+            {
+                newSpeedEst[i] = newSpeedEst[rawSpeed.Count() - half_window_size - 1];
+            }
+            return newSpeedEst;
         }
     }
+}
