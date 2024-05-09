@@ -334,7 +334,7 @@ namespace Tutorials
         {
             latestValidKeyframe = currentKeyframe;
             currentKeyframe = new Keyframe(time);
-            keyframes.Enqueue(currentKeyframe);
+            keyframes.Enqueue(latestValidKeyframe);
 
             return keyframes.Count - 1;
         }

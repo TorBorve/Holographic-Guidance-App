@@ -50,9 +50,14 @@ namespace Tutorials
 
         public void setRecordingData(InputAnimation inputAnimation)
         {
-            _recordingData = RecordingData.FromInputAnimation(inputAnimation);
-            Debug.Log("New recording data set");
-            _debugger?.logInfo("New recording data set");
+            try {
+                _recordingData = RecordingData.FromInputAnimation(inputAnimation);
+                Debug.Log("New recording data set");
+                _debugger?.logInfo("New recording data set");
+            } catch (Exception e) {
+                _debugger?.logError(e.Message);
+                Debug.LogError(e.Message);
+            }
         }
 
         private void UpdateTrackedHandState()
@@ -63,6 +68,12 @@ namespace Tutorials
 
         public float UpdateTime(float time)
         {
+            if (_recordingData == null) {
+                string msg = "Recording data is null";
+                Debug.LogError(msg);
+                _debugger.logError(msg);
+                return time;
+            }
             UpdateTrackedHandState();
             float visalizeTime = _estimatedTime;
             switch (_state)

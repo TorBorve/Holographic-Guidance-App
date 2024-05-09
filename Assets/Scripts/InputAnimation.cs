@@ -1284,16 +1284,21 @@ namespace Tutorials
             for (int i = 0; i < keyframeCount; ++i)
             {
                 var time = curves[longestCurveIdx].keys[i].time;
+                int i_buggy = i;
+                if (i == keyframeCount)
+                {
+                    i_buggy = i - 1;
+                }
                 writer.Write(time);
                 for (int j = 0; j < curves.Count; ++j)
                 {
                     writer.Write(", ");
-                    if (curves[j].length <= i || curves[j].keys[i].time != time)
+                    if (curves[j].length <= i_buggy || curves[j].keys[i_buggy].time != time)
                     {
                         writer.Write(curves[j].Evaluate(time));
                     } else
                     {
-                        writer.Write(curves[j].keys[i].value);
+                        writer.Write(curves[j].keys[i_buggy].value);
                     }
                 }
                 writer.WriteLine("");
@@ -1315,12 +1320,28 @@ namespace Tutorials
             }
             for (int i = 0; i < keyframeCount; ++i)
             {
-                var poseString = reader.ReadLine().Split(',');
+                var poseLine = reader.ReadLine();
+                var poseString = poseLine.Split(',');
                 var time = float.Parse(poseString[0]);
+                if (poseString.Length != curveCount + 1)
+                {
+                    string msg = "Expected length " + (curveCount + 1) + ", got " + poseString.Length;
+                    msg += ", Line: " + poseLine;
+                    Debug.LogError(msg);
+                    throw new Exception(msg);
+                }
                 for (int j = 0; j < curveCount; ++j)
                 {
                     keyframes[j][i].time = time;
-                    keyframes[j][i].value = float.Parse(poseString[j + 1]);
+                    try
+                    {
+                        keyframes[j][i].value = float.Parse(poseString[j + 1]);
+                    } catch (Exception e)
+                    {
+                        string msg = e.Message + ", String was: " + poseLine;
+                        Debug.LogError(msg);
+                        throw new Exception(msg);
+                    }
                     keyframes[j][i].weightedMode = WeightedMode.Both;
                 }
             }

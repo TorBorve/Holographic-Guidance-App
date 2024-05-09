@@ -162,6 +162,7 @@ namespace Tutorials
             if (recorder.IsRecording)
             {
                 SaveAnimation();
+                // FileHandler.AnimationListInstance = null; // make sure new animation is loaded
                 recordButton.IsToggled = false;
                 objectManagerButton.IsToggled = true;
                 objectManagerPanel.SetActive(true);

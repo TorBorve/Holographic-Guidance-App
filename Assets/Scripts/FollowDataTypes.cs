@@ -420,26 +420,49 @@ namespace Tutorials
             Dictionary<TrackedHandJoint, InputAnimation.PoseCurves> handJointCurvesLeft = inputAnimation.handJointCurvesLeft;
             Dictionary<TrackedHandJoint, InputAnimation.PoseCurves> handJointCurvesRight = inputAnimation.handJointCurvesRight;
             int num_joints = Enum.GetNames(typeof(TrackedHandJoint)).Length;
+
+            var zeroCurve = new AnimationCurve();
+            var oneCurve = new AnimationCurve();
+            for (int i = 0; i < num_data_points; i++)
+            {
+                float time = leftTrackedCurve[i].time;
+                var zeroKeyframe = new Keyframe(time, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
+                zeroKeyframe.weightedMode = WeightedMode.Both;
+                var oneKeyframe = new Keyframe(time, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f);
+                oneKeyframe.weightedMode = WeightedMode.Both;
+
+                zeroCurve.AddKey(zeroKeyframe);
+                oneCurve.AddKey(oneKeyframe);
+            }
+
             for (int j = 1; j < num_joints; ++j)
             {
                 {
-                    if (!handJointCurvesLeft.TryGetValue((TrackedHandJoint)j, out var curves))
+                    Keyframe[] PosXCurve = zeroCurve.keys;
+                    Keyframe[] PosYCurve = zeroCurve.keys;
+                    Keyframe[] PosZCurve = zeroCurve.keys;
+                    Keyframe[] RotXCurve = zeroCurve.keys;
+                    Keyframe[] RotYCurve = zeroCurve.keys;
+                    Keyframe[] RotZCurve = zeroCurve.keys;
+                    Keyframe[] RotWCurve = oneCurve.keys;
+
+                    if (handJointCurvesLeft.TryGetValue((TrackedHandJoint)j, out var curves))
                     {
-                        throw new Exception("Joint Not present in data: " + (TrackedHandJoint)j);
+                        PosXCurve = curves.GlobalPositionX.keys;
+                        PosYCurve = curves.GlobalPositionY.keys;
+                        PosZCurve = curves.GlobalPositionZ.keys;
+                        RotXCurve = curves.GlobalRotationX.keys;
+                        RotYCurve = curves.GlobalRotationY.keys;
+                        RotZCurve = curves.GlobalRotationZ.keys;
+                        RotWCurve = curves.GlobalRotationW.keys;
                     }
-                    Keyframe[] PosXCurve = curves.GlobalPositionX.keys;
+
                     Debug.Assert(PosXCurve.Count() == num_data_points);
-                    Keyframe[] PosYCurve = curves.GlobalPositionY.keys;
                     Debug.Assert(PosYCurve.Count() == num_data_points);
-                    Keyframe[] PosZCurve = curves.GlobalPositionZ.keys;
                     Debug.Assert(PosZCurve.Count() == num_data_points);
-                    Keyframe[] RotXCurve = curves.GlobalRotationX.keys;
                     Debug.Assert(RotXCurve.Count() == num_data_points);
-                    Keyframe[] RotYCurve = curves.GlobalRotationY.keys;
                     Debug.Assert(RotYCurve.Count() == num_data_points);
-                    Keyframe[] RotZCurve = curves.GlobalRotationZ.keys;
                     Debug.Assert(RotZCurve.Count() == num_data_points);
-                    Keyframe[] RotWCurve = curves.GlobalRotationW.keys;
                     Debug.Assert(RotWCurve.Count() == num_data_points);
 
                     for (int i = 0; i < num_data_points; i++)
@@ -453,23 +476,31 @@ namespace Tutorials
                     }
                 }
                 {
-                    if (!handJointCurvesRight.TryGetValue((TrackedHandJoint)j, out var curves))
+                    Keyframe[] PosXCurve = zeroCurve.keys;
+                    Keyframe[] PosYCurve = zeroCurve.keys;
+                    Keyframe[] PosZCurve = zeroCurve.keys;
+                    Keyframe[] RotXCurve = zeroCurve.keys;
+                    Keyframe[] RotYCurve = zeroCurve.keys;
+                    Keyframe[] RotZCurve = zeroCurve.keys;
+                    Keyframe[] RotWCurve = oneCurve.keys;
+
+                    if (handJointCurvesRight.TryGetValue((TrackedHandJoint)j, out var curves))
                     {
-                        throw new Exception("Joint Not present in data: " + (TrackedHandJoint)j);
+                        PosXCurve = curves.GlobalPositionX.keys;
+                        PosYCurve = curves.GlobalPositionY.keys;
+                        PosZCurve = curves.GlobalPositionZ.keys;
+                        RotXCurve = curves.GlobalRotationX.keys;
+                        RotYCurve = curves.GlobalRotationY.keys;
+                        RotZCurve = curves.GlobalRotationZ.keys;
+                        RotWCurve = curves.GlobalRotationW.keys;
                     }
-                    Keyframe[] PosXCurve = curves.GlobalPositionX.keys;
+
                     Debug.Assert(PosXCurve.Count() == num_data_points);
-                    Keyframe[] PosYCurve = curves.GlobalPositionY.keys;
                     Debug.Assert(PosYCurve.Count() == num_data_points);
-                    Keyframe[] PosZCurve = curves.GlobalPositionZ.keys;
                     Debug.Assert(PosZCurve.Count() == num_data_points);
-                    Keyframe[] RotXCurve = curves.GlobalRotationX.keys;
                     Debug.Assert(RotXCurve.Count() == num_data_points);
-                    Keyframe[] RotYCurve = curves.GlobalRotationY.keys;
                     Debug.Assert(RotYCurve.Count() == num_data_points);
-                    Keyframe[] RotZCurve = curves.GlobalRotationZ.keys;
                     Debug.Assert(RotZCurve.Count() == num_data_points);
-                    Keyframe[] RotWCurve = curves.GlobalRotationW.keys;
                     Debug.Assert(RotWCurve.Count() == num_data_points);
 
                     for (int i = 0; i < num_data_points; i++)
