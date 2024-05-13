@@ -47,6 +47,9 @@ namespace Tutorials
         private LogToUIText _debugger;
 
         [SerializeField]
+        private Recorder recorder;
+
+        [SerializeField]
         private Transform animationSpecificPointOfReference;
 
         [SerializeField]
@@ -130,6 +133,8 @@ namespace Tutorials
         {
             _guidanceMode = newGuidanceMode;
             _holoGuider.SetDebugger(_debugger);
+            _holoGuider.SetRecordingHand(Handedness.Left, recorder.getRecordingInvisibleHandTransform(Handedness.Left));
+            _holoGuider.SetRecordingHand(Handedness.Right, recorder.getRecordingInvisibleHandTransform(Handedness.Right));
             if (_guidanceMode)
             {
                 _holoGuider.StartGuiding();

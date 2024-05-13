@@ -471,6 +471,7 @@ namespace Tutorials
                         Debug.Assert(dataPoints[i].timeStamp == time);
                         Vector3 jointPos = new Vector3(PosXCurve[i].value, PosYCurve[i].value, PosZCurve[i].value);
                         Quaternion jointRot = new Quaternion(RotXCurve[i].value, RotYCurve[i].value, RotZCurve[i].value, RotWCurve[i].value);
+                        jointRot = jointRot * Recorder.RecordingFrameInverse(Handedness.Left);
                         MixedRealityPose jointPose = new MixedRealityPose(jointPos, jointRot);
                         dataPoints[i].leftHand.Add((TrackedHandJoint)j, jointPose);
                     }
@@ -509,11 +510,120 @@ namespace Tutorials
                         Debug.Assert(dataPoints[i].timeStamp == time);
                         Vector3 jointPos = new Vector3(PosXCurve[i].value, PosYCurve[i].value, PosZCurve[i].value);
                         Quaternion jointRot = new Quaternion(RotXCurve[i].value, RotYCurve[i].value, RotZCurve[i].value, RotWCurve[i].value);
+                        jointRot = jointRot * Recorder.RecordingFrameInverse(Handedness.Right);
                         MixedRealityPose jointPose = new MixedRealityPose(jointPos, jointRot);
                         dataPoints[i].rightHand.Add((TrackedHandJoint)j, jointPose);
                     }
                 }
             }
+
+            // compansate for QR code anchor
+
+            // find valid tracked data
+            
+            Quaternion R_right = new Quaternion(0, 0, 0, 1);
+            Vector3 offset_right = new Vector3(0, 0, 0);
+
+            if (handJointCurvesRight.TryGetValue(TrackedHandJoint.Wrist, out var wristCurve))
+            {
+                for (int i = 0; i < dataPoints.Count(); i++)
+                {
+                    if (dataPoints[i].rightIsTracked)
+                        {
+                            Vector3 locWristPos = new Vector3(wristCurve.PositionX.keys[i].value,
+                                                                wristCurve.PositionY.keys[i].value,
+                                                                wristCurve.PositionZ.keys[i].value);
+                            Quaternion locWristRot = new Quaternion(wristCurve.RotationX.keys[i].value,
+                                                                    wristCurve.RotationY.keys[i].value,
+                                                                    wristCurve.RotationZ.keys[i].value,
+                                                                    wristCurve.RotationW.keys[i].value);
+                            Vector3 globWristPos = new Vector3(wristCurve.GlobalPositionX.keys[i].value,
+                                                                wristCurve.GlobalPositionY.keys[i].value,
+                                                                wristCurve.GlobalPositionZ.keys[i].value);
+                            Quaternion globWristRot = new Quaternion(wristCurve.GlobalRotationX.keys[i].value,
+                                                                    wristCurve.GlobalRotationY.keys[i].value,
+                                                                    wristCurve.GlobalRotationZ.keys[i].value,
+                                                                    wristCurve.GlobalRotationW.keys[i].value);
+                            // R * (locPos) + offset = globPos
+                            // globRot = R * locrot
+                            R_right = globWristRot * Quaternion.Inverse(locWristRot);
+                            offset_right = globWristPos - (R_right * locWristPos);
+                            break;
+                        }
+                }   
+            }
+            Quaternion R_left = new Quaternion(0, 0, 0, 1);
+            Vector3 offset_left = new Vector3(0, 0, 0);
+
+            if (handJointCurvesLeft.TryGetValue(TrackedHandJoint.Wrist, out var wristCurveLeft))
+            {
+                for (int i = 0; i < dataPoints.Count(); i++)
+                {
+                    if (dataPoints[i].leftIsTracked)
+                        {
+                            Vector3 locWristPos = new Vector3(wristCurveLeft.PositionX.keys[i].value,
+                                                                wristCurveLeft.PositionY.keys[i].value,
+                                                                wristCurveLeft.PositionZ.keys[i].value);
+                            Quaternion locWristRot = new Quaternion(wristCurveLeft.RotationX.keys[i].value,
+                                                                    wristCurveLeft.RotationY.keys[i].value,
+                                                                    wristCurveLeft.RotationZ.keys[i].value,
+                                                                    wristCurveLeft.RotationW.keys[i].value);
+                            Vector3 globWristPos = new Vector3(wristCurveLeft.GlobalPositionX.keys[i].value,
+                                                                wristCurveLeft.GlobalPositionY.keys[i].value,
+                                                                wristCurveLeft.GlobalPositionZ.keys[i].value);
+                            Quaternion globWristRot = new Quaternion(wristCurveLeft.GlobalRotationX.keys[i].value,
+                                                                    wristCurveLeft.GlobalRotationY.keys[i].value,
+                                                                    wristCurveLeft.GlobalRotationZ.keys[i].value,
+                                                                    wristCurveLeft.GlobalRotationW.keys[i].value);
+                            // R * (locPos) + offset = globPos
+                            // globRot = R * locrot
+                            R_left = globWristRot * Quaternion.Inverse(locWristRot);
+                            offset_left = globWristPos - (R_left * locWristPos);
+                            break;
+                        }
+                }   
+            }
+            
+
+           // Transform all joint to mach with MRTK reference system
+           // localPos = R_inv * (globalPos-offset);
+           // localRot = R_inv*globRot;
+
+            Debug.Log("R_right: " + R_right.ToString());
+            Debug.Log("d_right: " + offset_right.ToString());
+            Debug.Log("R_left: " + R_left.ToString());
+            Debug.Log("d_left: " + offset_left.ToString());
+
+           
+            for (int i = 0; i < dataPoints.Count(); i++)
+            {
+                if (dataPoints[i].rightIsTracked)
+                {
+                    for (int j = 1; j < num_joints; ++j)
+                    {
+                        if (dataPoints[i].rightHand.TryGetValue((TrackedHandJoint)j, out var pose))
+                        {
+                            Vector3 newPos = Quaternion.Inverse(R_right) * (pose.Position - offset_right);
+                            Quaternion newRot = Quaternion.Inverse(R_right) * pose.Rotation;
+                            MixedRealityPose newPose = new MixedRealityPose(newPos, newRot);
+                            dataPoints[i].rightHand[(TrackedHandJoint)j] = newPose;
+                        }
+                    }
+                }
+                if (dataPoints[i].leftIsTracked)
+                {
+                    for (int j = 1; j < num_joints; ++j)
+                    {
+                        if (dataPoints[i].leftHand.TryGetValue((TrackedHandJoint)j, out var pose))
+                        {
+                            Vector3 newPos = Quaternion.Inverse(R_right) * (pose.Position - offset_left);
+                            Quaternion newRot = Quaternion.Inverse(R_right) * pose.Rotation;
+                            MixedRealityPose newPose = new MixedRealityPose(newPos, newRot);
+                            dataPoints[i].leftHand[(TrackedHandJoint)j] = newPose;
+                        }
+                    }
+                }
+            }            
 
             RecordingData recordingData = new RecordingData(dataPoints);
             return recordingData;

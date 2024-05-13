@@ -126,6 +126,18 @@ namespace Tutorials
             InitializeDictionary(recordingHandLeft.transform, recordingHandRight.transform);
         }
 
+        public Transform getRecordingInvisibleHandTransform(Handedness handedness)
+        {
+            if (handedness == Handedness.Left)
+            {
+                return recordingHandLeft.transform;
+            }
+            else
+            {
+                return recordingHandRight.transform;
+            }
+        }
+
         /// <summary>
         /// Creates a new animation wrapper that will be opened in the Editor. 
         /// The animation specific point of reference will be reset to the global origin that is either at the MixedReality

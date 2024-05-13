@@ -3,6 +3,7 @@ using Microsoft.MixedReality.Toolkit;
 using Microsoft.MixedReality.Toolkit.Input;
 using Microsoft.MixedReality.Toolkit.Utilities;
 using System;
+using System.Collections.Generic;
 
 namespace Tutorials
 {
@@ -22,6 +23,12 @@ namespace Tutorials
         private IMixedRealityHand _leftHand = null;
         private IMixedRealityHand _rightHand = null;
 
+        private Dictionary<TrackedHandJoint, MixedRealityPose> _lefHandPoses = null;
+        private Dictionary<TrackedHandJoint, MixedRealityPose> _rightHandPoses = null;
+
+        private Transform _leftRecordingHand = null;
+        private Transform _rightRecordingHand = null;
+
         private float _guidanceSpeed = 0f;
         private static readonly float MAX_GUIDANCE_SPEED = 1f;
         private static readonly float MAX_ACCELERATION = 1 / 1.5f;
@@ -34,6 +41,18 @@ namespace Tutorials
         public void SetDebugger(LogToUIText debugger)
         {
             _debugger = debugger;
+        }
+
+        public void SetRecordingHand(Handedness handedness, Transform hand)
+        {
+            Debug.Log("Set recording hand in HoloGuider: " + handedness.ToString());
+            if (handedness == Handedness.Left)
+            {
+                _leftRecordingHand = hand;
+            } else
+            {
+                _rightRecordingHand = hand;
+            }
         }
 
         public void StopGuiding()
@@ -64,6 +83,43 @@ namespace Tutorials
         {
             _leftHand = HandJointUtils.FindHand(Handedness.Left);
             _rightHand = HandJointUtils.FindHand(Handedness.Right);
+            if (_leftHand != null)
+            {
+                _lefHandPoses = TransformHand(_leftHand, _leftRecordingHand);
+            }
+            if (_rightHand != null)
+            {
+                _rightHandPoses = TransformHand(_rightHand, _rightRecordingHand);
+            }
+            _leftHand = null;
+            _rightHand = null;
+        }
+
+        private Dictionary<TrackedHandJoint, MixedRealityPose> TransformHand(IMixedRealityHand hand, Transform transform)
+        {
+            var handPoses = new Dictionary<TrackedHandJoint, MixedRealityPose>();
+
+            Vector3 Pos_world_to_QR = transform.position;
+            Quaternion Rot_world_to_QR = transform.rotation;
+
+            for (int i = 1; i < Enum.GetNames(typeof(TrackedHandJoint)).Length; ++i)
+            {
+                if (hand.TryGetJoint((TrackedHandJoint)i, out var jointPose))
+                {
+                    Vector3 globPos = jointPose.Position;
+                    Quaternion globalRot = jointPose.Rotation;
+
+                    Vector3 relativeToQRPos = Quaternion.Inverse(Rot_world_to_QR) * (globPos - Pos_world_to_QR);
+                    Quaternion relativeToQRRot = Quaternion.Inverse(Rot_world_to_QR) * globalRot;
+                    MixedRealityPose relativeTOQRPose = new MixedRealityPose(relativeToQRPos, relativeToQRRot);
+                    handPoses[(TrackedHandJoint)i] = relativeTOQRPose;
+                }
+            }
+            return handPoses;
+
+            //Vector3 newPos = Quaternion.Inverse(R_right) * (pose.Position - offset_right);
+            //Quaternion newRot = Quaternion.Inverse(R_right) * pose.Rotation;
+            //MixedRealityPose newPose = new MixedRealityPose(newPos, newRot);
         }
 
         public float UpdateTime(float time)
@@ -75,7 +131,56 @@ namespace Tutorials
                 return time;
             }
             UpdateTrackedHandState();
+            {
+                Vector3 handRootPos = _rightRecordingHand.position;
+                Quaternion handRootRot = _rightRecordingHand.rotation;
+                string msg = "Root: Pos: " + handRootPos.ToString() + ", Rot: " + handRootRot.ToString();
+                Debug.Log(msg);
+                _debugger.logInfo(msg);
+            }
+            _estimatedTime = time;
+            //{
+            //    if (_rightHand != null && _recordingData != null)
+            //    {
+            //        DataPoint currentDataPoint = _recordingData.InterpolateDataAtTime(_estimatedTime);
+            //        FingerAndWristData currentFingerData = new FingerAndWristData(currentDataPoint.rightHand);
+            //        FingerAndWristData trackedFingerData = new FingerAndWristData(_rightHand);
+
+            //        if (currentDataPoint.rightHand.TryGetValue(TrackedHandJoint.Wrist, out var recWrist) && _rightHand.TryGetJoint(TrackedHandJoint.Wrist, out var trackedWrist))
+            //        {
+            //            _debugger.logInfo("**Rec Wrist: " + recWrist.ToString());
+            //            _debugger.logInfo("**Track Wrist: " + trackedWrist.ToString());
+            //        }
+
+            //        _debugger.logInfo("Rec: " + currentFingerData.ToString());
+            //        _debugger.logInfo("Tracked: " + trackedFingerData.ToString());
+            //        float dist = FingerAndWristData.Distance(currentFingerData, trackedFingerData);
+            //        _debugger.logInfo("Dist: " + dist.ToString());
+
+            //    }
+            //}
+            {
+                if (_rightHandPoses != null && _recordingData != null)
+                {
+                    DataPoint currentDataPoint = _recordingData.InterpolateDataAtTime(_estimatedTime);
+                    FingerAndWristData currentFingerData = new FingerAndWristData(currentDataPoint.rightHand);
+                    FingerAndWristData trackedFingerData = new FingerAndWristData(_rightHandPoses);
+
+                    if (currentDataPoint.rightHand.TryGetValue(TrackedHandJoint.Wrist, out var recWrist) && _rightHandPoses.TryGetValue(TrackedHandJoint.Wrist, out var trackedWrist))
+                    {
+                        _debugger.logInfo("**Rec Wrist: " + recWrist.ToString());
+                        _debugger.logInfo("**Track Wrist: " + trackedWrist.ToString());
+                    }
+
+                    _debugger.logInfo("Rec: " + currentFingerData.ToString());
+                    _debugger.logInfo("Tracked: " + trackedFingerData.ToString());
+                    float dist = FingerAndWristData.Distance(currentFingerData, trackedFingerData);
+                    _debugger.logInfo("Dist: " + dist.ToString());
+
+                }
+            }
             float visalizeTime = _estimatedTime;
+            return time;
             switch (_state)
             {
                 case State.Starting:
@@ -122,12 +227,12 @@ namespace Tutorials
         {
             {
                 float updatedEstimatedTime = _estimatedTime;
-                if (_rightHand != null && _rightHand.TryGetJoint(TrackedHandJoint.Wrist, out MixedRealityPose jointPose))
+                if (_rightHandPoses != null && _rightHandPoses.TryGetValue(TrackedHandJoint.Wrist, out MixedRealityPose jointPose))
                 {
                     Vector3 trackedPos = jointPose.Position;
                     DataPoint currentDataPoint = _recordingData.InterpolateDataAtTime(_estimatedTime);
                     FingerAndWristData currentFingerData = new FingerAndWristData(currentDataPoint.rightHand);
-                    FingerAndWristData recFingerData = new FingerAndWristData(_rightHand);
+                    FingerAndWristData recFingerData = new FingerAndWristData(_rightHandPoses);
                     float dist = FingerAndWristData.Distance(currentFingerData, recFingerData);
 
                     float max_hand_precision_tolerance = 0.1f;
