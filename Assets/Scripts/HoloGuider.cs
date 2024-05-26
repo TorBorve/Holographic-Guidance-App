@@ -20,9 +20,6 @@ namespace Tutorials
         private RecordingData _recordingData = null;
         private State _state = State.Starting;
 
-        private IMixedRealityHand _leftHand = null;
-        private IMixedRealityHand _rightHand = null;
-
         private Dictionary<TrackedHandJoint, MixedRealityPose> _lefHandPoses = null;
         private Dictionary<TrackedHandJoint, MixedRealityPose> _rightHandPoses = null;
 
@@ -57,14 +54,19 @@ namespace Tutorials
 
         public void StopGuiding()
         {
-            _state = State.Finished;
-            _guidanceSpeed = 0f;
+            StartGuiding();
         }
         public void StartGuiding()
         {
             _state = State.Starting;
             _guidanceSpeed = 0f;
-            _estimatedTime = _recordingData.GetStartTime();
+            try
+            {
+                _estimatedTime = _recordingData.GetStartTime();
+            } catch
+            {
+                _estimatedTime = 0.0f;
+            }
         }
 
         public void setRecordingData(InputAnimation inputAnimation)
@@ -73,6 +75,8 @@ namespace Tutorials
                 _recordingData = RecordingData.FromInputAnimation(inputAnimation);
                 Debug.Log("New recording data set");
                 _debugger?.logInfo("New recording data set");
+                StopGuiding();
+                StopGuiding();
             } catch (Exception e) {
                 _debugger?.logError(e.Message);
                 Debug.LogError(e.Message);
@@ -81,18 +85,16 @@ namespace Tutorials
 
         private void UpdateTrackedHandState()
         {
-            _leftHand = HandJointUtils.FindHand(Handedness.Left);
-            _rightHand = HandJointUtils.FindHand(Handedness.Right);
-            if (_leftHand != null)
+             var leftHand = HandJointUtils.FindHand(Handedness.Left);
+             var rightHand = HandJointUtils.FindHand(Handedness.Right);
+            if (leftHand != null)
             {
-                _lefHandPoses = TransformHand(_leftHand, _leftRecordingHand);
+                _lefHandPoses = TransformHand(leftHand, _leftRecordingHand);
             }
-            if (_rightHand != null)
+            if (rightHand != null)
             {
-                _rightHandPoses = TransformHand(_rightHand, _rightRecordingHand);
+                _rightHandPoses = TransformHand(rightHand, _rightRecordingHand);
             }
-            _leftHand = null;
-            _rightHand = null;
         }
 
         private Dictionary<TrackedHandJoint, MixedRealityPose> TransformHand(IMixedRealityHand hand, Transform transform)
@@ -127,7 +129,17 @@ namespace Tutorials
                 return time;
             }
             UpdateTrackedHandState();
+            /*{
+                if (_rightHandPoses != null) {
+                    FingerAndWristData trackFingerData = new FingerAndWristData(_rightHandPoses);
+                    _debugger.logInfo("Track: " + trackFingerData.ToString());
+                }
+                DataPoint currentDataPoint = _recordingData.InterpolateDataAtTime(_estimatedTime);
+                FingerAndWristData currentFingerData = new FingerAndWristData(currentDataPoint.rightHand);
+                _debugger.logInfo("rec: " + currentFingerData.ToString());
+            }*/
             float visalizeTime = _estimatedTime;
+            //Debug.Log("State: " + _state.ToString());
             switch (_state)
             {
                 case State.Starting:
@@ -155,7 +167,7 @@ namespace Tutorials
                     if (_estimatedTime >= _recordingData.GetEndTime())
                     {
                         _debugger.logInfo("Finished Guiding");
-                        _state = State.Starting;
+                        _state = State.Finished;
                     }
                     break;
                 case State.Finished:

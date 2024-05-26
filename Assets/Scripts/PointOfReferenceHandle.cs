@@ -14,6 +14,7 @@ public class PointOfReferenceHandle : MonoBehaviour
     void Start()
     {
         handle.SetActive(false);
+        debugPanel.SetActive(false);
     }
 
     public void ToggleHandle()

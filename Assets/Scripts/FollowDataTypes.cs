@@ -268,8 +268,8 @@ namespace Tutorials
             const int N_dim = 6;
             if (weight == null)
             {
-                //weight = new float[N_dim] { 1f / N_dim, 1f / N_dim, 1f / N_dim, 1f / N_dim, 1f / N_dim, 1f / N_dim };
-                weight = new float[N_dim] { 1f, 0f, 0f, 0f, 0f, 0f};
+                weight = new float[N_dim] { 1f / N_dim, 1f / N_dim, 1f / N_dim, 1f / N_dim, 1f / N_dim, 1f / N_dim };
+                //weight = new float[N_dim] { 1f, 0f, 0f, 0f, 0f, 0f};
             }
             if (weight.Count() != N_dim)
             {

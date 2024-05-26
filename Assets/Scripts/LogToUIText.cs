@@ -35,9 +35,16 @@ namespace Tutorials
 
         public void log(string logMsg)
         {
-            _displayContent += logMsg + "\n";
-            _currentAmountLogLines += 1;
-            _logHasChanged = true;
+            Debug.Log(logMsg);
+            if (textWindowObject.active) // Do not log if the panel is not active
+            {
+                _displayContent += logMsg + "\n";
+                _currentAmountLogLines += 1;
+                _logHasChanged = true;
+            } else
+            {
+                Debug.Log("Debug Panel not active");
+            }
         }
 
         void Update()

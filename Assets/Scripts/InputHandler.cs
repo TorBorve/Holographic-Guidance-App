@@ -407,7 +407,7 @@ namespace Tutorials
         public void GuidanceButton()
         {
             player.setGuidanceMode(guidanceButton.IsToggled);
-            follower.playAnimation();
+            //follower.playAnimation();
         }
 
         /// <summary>
