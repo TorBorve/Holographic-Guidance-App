@@ -114,7 +114,7 @@ namespace Tutorials
         /// </summary>
         public void SpeechRecord()
         {
-            return;
+            //return;
             if (recordButton.IsToggled)
             {
                 return;
@@ -128,7 +128,7 @@ namespace Tutorials
         /// </summary>
         public void SpeechSave()
         {
-            return;
+            //return;
             if (!recordButton.IsToggled)
             {
                 return;
@@ -142,7 +142,7 @@ namespace Tutorials
         /// </summary>
         public void RecordAction()
         {
-            return;
+            //return;
             // Do not record while there is an animation playing
             if (playStopButton.IsToggled)
             {
@@ -220,7 +220,7 @@ namespace Tutorials
         /// </summary>
         public void RecordAnimation()
         {
-            return;
+            //return;
             if (FileHandler.AnimationListInstance.CurrentNode == null)
             {
                 player.Stop();
@@ -235,7 +235,7 @@ namespace Tutorials
         /// </summary>
         public void CreateNewAnimationWrapper()
         {
-            return;
+            //return;
             if(recordButton.IsToggled)
                 return;
             player.Stop();
@@ -247,7 +247,7 @@ namespace Tutorials
         /// </summary>
         public void EditStepName()
         {
-            return;
+            //return;
             if(recordButton.IsToggled)
                 return;
             stepNameHandler.EditSceneName();
@@ -296,7 +296,7 @@ namespace Tutorials
         /// </summary>
         public void CloseAnimation()
         {
-            return;
+            //return;
             if(recordButton.IsToggled)
                 return;
             recorder.CloseAnimation();
@@ -358,7 +358,7 @@ namespace Tutorials
         /// </summary>
         public void SpeechPlay()
         {
-            return;
+            //return;
             if (playStopButton.IsToggled)
             {
                 return;
@@ -372,7 +372,7 @@ namespace Tutorials
         /// </summary>
         public void SpeechStop()
         {
-            return;
+            //return;
             if (!playStopButton.IsToggled)
             {
                 return;

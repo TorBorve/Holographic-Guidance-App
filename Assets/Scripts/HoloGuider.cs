@@ -116,10 +116,6 @@ namespace Tutorials
                 }
             }
             return handPoses;
-
-            //Vector3 newPos = Quaternion.Inverse(R_right) * (pose.Position - offset_right);
-            //Quaternion newRot = Quaternion.Inverse(R_right) * pose.Rotation;
-            //MixedRealityPose newPose = new MixedRealityPose(newPos, newRot);
         }
 
         public float UpdateTime(float time)
@@ -131,34 +127,6 @@ namespace Tutorials
                 return time;
             }
             UpdateTrackedHandState();
-            //{
-            //    Vector3 handRootPos = _rightRecordingHand.position;
-            //    Quaternion handRootRot = _rightRecordingHand.rotation;
-            //    string msg = "Root: Pos: " + handRootPos.ToString() + ", Rot: " + handRootRot.ToString();
-            //    Debug.Log(msg);
-            //    _debugger.logInfo(msg);
-            //}
-            ////_estimatedTime = time;
-            //{
-            //    if (_rightHandPoses != null && _recordingData != null)
-            //    {
-            //        DataPoint currentDataPoint = _recordingData.InterpolateDataAtTime(_estimatedTime);
-            //        FingerAndWristData currentFingerData = new FingerAndWristData(currentDataPoint.rightHand);
-            //        FingerAndWristData trackedFingerData = new FingerAndWristData(_rightHandPoses);
-
-            //        if (currentDataPoint.rightHand.TryGetValue(TrackedHandJoint.Wrist, out var recWrist) && _rightHandPoses.TryGetValue(TrackedHandJoint.Wrist, out var trackedWrist))
-            //        {
-            //            _debugger.logInfo("**Rec Wrist: " + recWrist.ToString());
-            //            _debugger.logInfo("**Track Wrist: " + trackedWrist.ToString());
-            //        }
-
-            //        _debugger.logInfo("Rec: " + currentFingerData.ToString());
-            //        _debugger.logInfo("Tracked: " + trackedFingerData.ToString());
-            //        float dist = FingerAndWristData.Distance(currentFingerData, trackedFingerData);
-            //        _debugger.logInfo("Dist: " + dist.ToString());
-
-            //    }
-            //}
             float visalizeTime = _estimatedTime;
             switch (_state)
             {

@@ -16,10 +16,10 @@ public class SceneManagerPanel : MonoBehaviour
         debugPanel.SetActive(false);
     }
 
-    public void ToggleDebugPanel()
-    {
-        debugPanel.SetActive(!debugPanel.active);
-    }
+    //public void ToggleDebugPanel()
+    //{
+    //    debugPanel.SetActive(!debugPanel.active);
+    //}
 
     /// <summary>
     /// Toggles a manager panel to control specific aspects of the scene
