@@ -114,6 +114,7 @@ namespace Tutorials
         /// </summary>
         public void SpeechRecord()
         {
+            return;
             if (recordButton.IsToggled)
             {
                 return;
@@ -127,6 +128,7 @@ namespace Tutorials
         /// </summary>
         public void SpeechSave()
         {
+            return;
             if (!recordButton.IsToggled)
             {
                 return;
@@ -140,6 +142,7 @@ namespace Tutorials
         /// </summary>
         public void RecordAction()
         {
+            return;
             // Do not record while there is an animation playing
             if (playStopButton.IsToggled)
             {
@@ -217,6 +220,7 @@ namespace Tutorials
         /// </summary>
         public void RecordAnimation()
         {
+            return;
             if (FileHandler.AnimationListInstance.CurrentNode == null)
             {
                 player.Stop();
@@ -231,6 +235,7 @@ namespace Tutorials
         /// </summary>
         public void CreateNewAnimationWrapper()
         {
+            return;
             if(recordButton.IsToggled)
                 return;
             player.Stop();
@@ -242,6 +247,7 @@ namespace Tutorials
         /// </summary>
         public void EditStepName()
         {
+            return;
             if(recordButton.IsToggled)
                 return;
             stepNameHandler.EditSceneName();
@@ -290,6 +296,7 @@ namespace Tutorials
         /// </summary>
         public void CloseAnimation()
         {
+            return;
             if(recordButton.IsToggled)
                 return;
             recorder.CloseAnimation();
@@ -351,6 +358,7 @@ namespace Tutorials
         /// </summary>
         public void SpeechPlay()
         {
+            return;
             if (playStopButton.IsToggled)
             {
                 return;
@@ -364,6 +372,7 @@ namespace Tutorials
         /// </summary>
         public void SpeechStop()
         {
+            return;
             if (!playStopButton.IsToggled)
             {
                 return;

@@ -30,9 +30,9 @@ namespace Tutorials
         private Transform _rightRecordingHand = null;
 
         private float _guidanceSpeed = 0f;
-        private static readonly float MAX_GUIDANCE_SPEED = 1f;
-        private static readonly float MAX_ACCELERATION = 1 / 1.5f;
-        private static readonly float MIN_ACCELERATION = -1 / 1f;
+        private static readonly float MAX_GUIDANCE_SPEED = 0.75f;
+        private static readonly float MAX_ACCELERATION = 1 / 1f;
+        private static readonly float MIN_ACCELERATION = -1 / 0.3f;
 
         private float _estimatedTime = 0f;
 
@@ -131,22 +131,22 @@ namespace Tutorials
                 return time;
             }
             UpdateTrackedHandState();
-            {
-                Vector3 handRootPos = _rightRecordingHand.position;
-                Quaternion handRootRot = _rightRecordingHand.rotation;
-                string msg = "Root: Pos: " + handRootPos.ToString() + ", Rot: " + handRootRot.ToString();
-                Debug.Log(msg);
-                _debugger.logInfo(msg);
-            }
-            _estimatedTime = time;
             //{
-            //    if (_rightHand != null && _recordingData != null)
+            //    Vector3 handRootPos = _rightRecordingHand.position;
+            //    Quaternion handRootRot = _rightRecordingHand.rotation;
+            //    string msg = "Root: Pos: " + handRootPos.ToString() + ", Rot: " + handRootRot.ToString();
+            //    Debug.Log(msg);
+            //    _debugger.logInfo(msg);
+            //}
+            ////_estimatedTime = time;
+            //{
+            //    if (_rightHandPoses != null && _recordingData != null)
             //    {
             //        DataPoint currentDataPoint = _recordingData.InterpolateDataAtTime(_estimatedTime);
             //        FingerAndWristData currentFingerData = new FingerAndWristData(currentDataPoint.rightHand);
-            //        FingerAndWristData trackedFingerData = new FingerAndWristData(_rightHand);
+            //        FingerAndWristData trackedFingerData = new FingerAndWristData(_rightHandPoses);
 
-            //        if (currentDataPoint.rightHand.TryGetValue(TrackedHandJoint.Wrist, out var recWrist) && _rightHand.TryGetJoint(TrackedHandJoint.Wrist, out var trackedWrist))
+            //        if (currentDataPoint.rightHand.TryGetValue(TrackedHandJoint.Wrist, out var recWrist) && _rightHandPoses.TryGetValue(TrackedHandJoint.Wrist, out var trackedWrist))
             //        {
             //            _debugger.logInfo("**Rec Wrist: " + recWrist.ToString());
             //            _debugger.logInfo("**Track Wrist: " + trackedWrist.ToString());
@@ -159,28 +159,7 @@ namespace Tutorials
 
             //    }
             //}
-            {
-                if (_rightHandPoses != null && _recordingData != null)
-                {
-                    DataPoint currentDataPoint = _recordingData.InterpolateDataAtTime(_estimatedTime);
-                    FingerAndWristData currentFingerData = new FingerAndWristData(currentDataPoint.rightHand);
-                    FingerAndWristData trackedFingerData = new FingerAndWristData(_rightHandPoses);
-
-                    if (currentDataPoint.rightHand.TryGetValue(TrackedHandJoint.Wrist, out var recWrist) && _rightHandPoses.TryGetValue(TrackedHandJoint.Wrist, out var trackedWrist))
-                    {
-                        _debugger.logInfo("**Rec Wrist: " + recWrist.ToString());
-                        _debugger.logInfo("**Track Wrist: " + trackedWrist.ToString());
-                    }
-
-                    _debugger.logInfo("Rec: " + currentFingerData.ToString());
-                    _debugger.logInfo("Tracked: " + trackedFingerData.ToString());
-                    float dist = FingerAndWristData.Distance(currentFingerData, trackedFingerData);
-                    _debugger.logInfo("Dist: " + dist.ToString());
-
-                }
-            }
             float visalizeTime = _estimatedTime;
-            return time;
             switch (_state)
             {
                 case State.Starting:
@@ -237,12 +216,18 @@ namespace Tutorials
 
                     float max_hand_precision_tolerance = 0.1f;
                     float max_hand_precision_speed = 0.05f;
-                    float min_hand_precision_tolerance = 0.4f;
+                    float min_hand_precision_tolerance = 0.2f;
                     float min_hand_precision_speed = 1f;
 
                     float rec_speed = currentDataPoint.rightSpeed;
                     float alpha_speed = Math.Min(Math.Max((rec_speed - max_hand_precision_speed) / (min_hand_precision_speed - max_hand_precision_speed), 0f), 1f);
                     float required_precision = alpha_speed * (min_hand_precision_tolerance - max_hand_precision_tolerance) + max_hand_precision_tolerance;
+
+                    if (_estimatedTime < 1f)
+                    {
+                        required_precision = min_hand_precision_tolerance;
+                    }
+                    //required_precision = 0.15f;
 
                     float acceleration = 0f;
                     if (dist < required_precision) // Then accelerate
@@ -262,7 +247,7 @@ namespace Tutorials
                         acceleration = MIN_ACCELERATION * alpha_acceleration;
                     }
 
-                    string msg = "Dist: " + dist.ToString() + ", req_dist: " + required_precision.ToString() + ", Accel: " + acceleration.ToString();
+                    string msg = "Dist: " + dist.ToString() + ", \nreq_dist: " + required_precision.ToString() + ", Accel: " + acceleration.ToString();
                     _debugger.logInfo(msg);
                     Debug.Log(msg);
 
@@ -283,7 +268,7 @@ namespace Tutorials
                 }
                 _estimatedTime = updatedEstimatedTime;
 
-                float secAhead = 0.1f;
+                float secAhead = 0.3f;
                 float visualizeTime = updatedEstimatedTime + secAhead * _guidanceSpeed;
                 visualizeTime = Math.Min(visualizeTime, _recordingData.GetEndTime());
                 return visualizeTime;

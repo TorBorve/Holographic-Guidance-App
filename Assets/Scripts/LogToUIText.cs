@@ -15,7 +15,7 @@ namespace Tutorials
         private bool _logHasChanged = false;
 
         // Avoid obvoius overflow
-        private const int MAX_LOG_LINES = 50;
+        private const int MAX_LOG_LINES = 20;
         private int _currentAmountLogLines = 0;
 
         public void logInfo(string logMsg)
@@ -67,6 +67,7 @@ namespace Tutorials
                         break;
                     }
                     _displayContent = _displayContent.Substring(firstNewline + 1);
+                    _currentAmountLogLines -= 1;
                     txtWindow.text = _displayContent;
                     txtWindow.ForceMeshUpdate();
                 }
