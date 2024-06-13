@@ -15,7 +15,7 @@ namespace Tutorials
         private bool _logHasChanged = false;
 
         // Avoid obvoius overflow
-        private const int MAX_LOG_LINES = 50;
+        private const int MAX_LOG_LINES = 20;
         private int _currentAmountLogLines = 0;
 
         public void logInfo(string logMsg)
@@ -35,9 +35,16 @@ namespace Tutorials
 
         public void log(string logMsg)
         {
-            _displayContent += logMsg + "\n";
-            _currentAmountLogLines += 1;
-            _logHasChanged = true;
+            Debug.Log(logMsg);
+            if (textWindowObject.active) // Do not log if the panel is not active
+            {
+                _displayContent += logMsg + "\n";
+                _currentAmountLogLines += 1;
+                _logHasChanged = true;
+            } else
+            {
+                Debug.Log("Debug Panel not active");
+            }
         }
 
         void Update()
@@ -67,6 +74,7 @@ namespace Tutorials
                         break;
                     }
                     _displayContent = _displayContent.Substring(firstNewline + 1);
+                    _currentAmountLogLines -= 1;
                     txtWindow.text = _displayContent;
                     txtWindow.ForceMeshUpdate();
                 }

@@ -45,6 +45,9 @@ namespace Tutorials
         [SerializeField]
         private Interactable objectManagerButton;
 
+        [SerializeField]
+        private Interactable guidanceButton;
+
         public TextMeshPro recordingCountdownText;
 
         private string countdownText = "";
@@ -111,6 +114,7 @@ namespace Tutorials
         /// </summary>
         public void SpeechRecord()
         {
+            //return;
             if (recordButton.IsToggled)
             {
                 return;
@@ -124,6 +128,7 @@ namespace Tutorials
         /// </summary>
         public void SpeechSave()
         {
+            //return;
             if (!recordButton.IsToggled)
             {
                 return;
@@ -137,6 +142,7 @@ namespace Tutorials
         /// </summary>
         public void RecordAction()
         {
+            //return;
             // Do not record while there is an animation playing
             if (playStopButton.IsToggled)
             {
@@ -159,6 +165,7 @@ namespace Tutorials
             if (recorder.IsRecording)
             {
                 SaveAnimation();
+                // FileHandler.AnimationListInstance = null; // make sure new animation is loaded
                 recordButton.IsToggled = false;
                 objectManagerButton.IsToggled = true;
                 objectManagerPanel.SetActive(true);
@@ -213,6 +220,7 @@ namespace Tutorials
         /// </summary>
         public void RecordAnimation()
         {
+            //return;
             if (FileHandler.AnimationListInstance.CurrentNode == null)
             {
                 player.Stop();
@@ -227,6 +235,7 @@ namespace Tutorials
         /// </summary>
         public void CreateNewAnimationWrapper()
         {
+            //return;
             if(recordButton.IsToggled)
                 return;
             player.Stop();
@@ -238,6 +247,7 @@ namespace Tutorials
         /// </summary>
         public void EditStepName()
         {
+            //return;
             if(recordButton.IsToggled)
                 return;
             stepNameHandler.EditSceneName();
@@ -286,6 +296,7 @@ namespace Tutorials
         /// </summary>
         public void CloseAnimation()
         {
+            //return;
             if(recordButton.IsToggled)
                 return;
             recorder.CloseAnimation();
@@ -347,6 +358,7 @@ namespace Tutorials
         /// </summary>
         public void SpeechPlay()
         {
+            //return;
             if (playStopButton.IsToggled)
             {
                 return;
@@ -360,6 +372,7 @@ namespace Tutorials
         /// </summary>
         public void SpeechStop()
         {
+            //return;
             if (!playStopButton.IsToggled)
             {
                 return;
@@ -391,11 +404,10 @@ namespace Tutorials
             }
         }
 
-        public void startFollow()
+        public void GuidanceButton()
         {
-            follower.SetFollower(player, recorder);
-            follower.playAnimation();
-
+            player.setGuidanceMode(guidanceButton.IsToggled);
+            //follower.playAnimation();
         }
 
         /// <summary>

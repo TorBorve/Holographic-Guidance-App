@@ -30,7 +30,8 @@ namespace Tutorials
 
         private float localTime = 0.0f;
 
-        private bool setFollowMode = false;
+        private bool _guidanceMode = false;
+        private HoloGuider _holoGuider = new HoloGuider();
 
         /// <summary>
         /// Contains meta data 
@@ -40,7 +41,13 @@ namespace Tutorials
         /// <summary>
         /// The actual animation that is being replayed 
         /// </summary>
-        private new InputAnimation animation;
+        public new InputAnimation animation;
+
+        [SerializeField]
+        private LogToUIText _debugger;
+
+        [SerializeField]
+        private Recorder recorder;
 
         [SerializeField]
         private Transform animationSpecificPointOfReference;
@@ -122,11 +129,22 @@ namespace Tutorials
             startAgain = true;
         }
 
-        public void StartFollowAnimation()
+        public void setGuidanceMode(bool newGuidanceMode)
         {
-            setFollowMode = true;
-            PlayCurrent();
+            _guidanceMode = newGuidanceMode;
+            _holoGuider.SetDebugger(_debugger);
+            _holoGuider.SetRecordingHand(Handedness.Left, recorder.getRecordingInvisibleHandTransform(Handedness.Left));
+            _holoGuider.SetRecordingHand(Handedness.Right, recorder.getRecordingInvisibleHandTransform(Handedness.Right));
+            if (_guidanceMode)
+            {
+                _holoGuider.StartGuiding();
+            } else
+            {
+                _holoGuider.StopGuiding();
+            }
         }
+
+
 
         /// <summary>
         /// Plays the currently loaded animation from beginning. If no animation is loaded, the animation specific point of reference is reset and the replay is stopped. 
@@ -241,6 +259,7 @@ namespace Tutorials
 
             this.animationWrapper = animationWrapper;
             animation = animationWrapper.Animation;
+            _holoGuider.setRecordingData(animation);
             // Get all objects from the animation and make them available
             objectManager.DeactivateRealObjects();
             InstantiateObjects();
@@ -274,61 +293,7 @@ namespace Tutorials
 
         public void Update()
         {
-            if (setFollowMode)
-            {
-                if (isPlaying)
-                {
-                    // local time is updated according to the fps delta time, taking the speed into accound. 
-                    // localTime += Time.deltaTime * 0.2f * (float)(animationWrapper.Speed);
-
-
-                    // if the local time is before the start frame, the local time is set to the time of the first frame (i.e. to the selected beginning of the animation)
-                    if (localTime < Duration * (float)animationWrapper.StartFrame)
-                    {
-                        localTime = Duration * (float)animationWrapper.StartFrame;
-                    }
-
-                    // if local time is before the last frame, the current hand pose is evaluated at localTime and the status bars of both hands are updated
-                    if (localTime < Duration * (float)animationWrapper.EndFrame && !startAgain)
-                    {
-                        Evaluate();
-                    }
-                    // when local time reaches the end of the animation, it is reset to the time of the first frame. 
-                    // in study mode, pausing is activated after each iteration, s.t. each animation is only played once. 
-                    else
-                    {
-                        localTime = Duration * (float)animationWrapper.StartFrame;
-                        startAgain = false;
-                    }
-                }
-            } else
-            {
-                if (isPlaying)
-                {
-                    // local time is updated according to the fps delta time, taking the speed into accound. 
-                    localTime += Time.deltaTime * (float)(animationWrapper.Speed);
-
-
-                    // if the local time is before the start frame, the local time is set to the time of the first frame (i.e. to the selected beginning of the animation)
-                    if (localTime < Duration * (float)animationWrapper.StartFrame)
-                    {
-                        localTime = Duration * (float)animationWrapper.StartFrame;
-                    }
-
-                    // if local time is before the last frame, the current hand pose is evaluated at localTime and the status bars of both hands are updated
-                    if (localTime < Duration * (float)animationWrapper.EndFrame && !startAgain)
-                    {
-                        Evaluate();
-                    }
-                    // when local time reaches the end of the animation, it is reset to the time of the first frame. 
-                    // in study mode, pausing is activated after each iteration, s.t. each animation is only played once. 
-                    else
-                    {
-                        localTime = Duration * (float)animationWrapper.StartFrame;
-                        startAgain = false;
-                    }
-                }
-            }
+                UpdateAnimationTime();
         }
 
         /// Evaluate the animation at localTime
@@ -458,9 +423,39 @@ namespace Tutorials
             return joints;
         }
 
-        public void setLocalTime(float time)
+        private void UpdateAnimationTime()
         {
-            localTime = time;
+            if (isPlaying)
+            {
+                if (_guidanceMode)
+                {
+                    localTime = _holoGuider.UpdateTime(localTime);
+                }
+                else
+                {
+                    // local time is updated according to the fps delta time, taking the speed into accound. 
+                    localTime += Time.deltaTime * (float)(animationWrapper.Speed);
+                }
+
+                // if the local time is before the start frame, the local time is set to the time of the first frame (i.e. to the selected beginning of the animation)
+                if (localTime < Duration * (float)animationWrapper.StartFrame)
+                {
+                    localTime = Duration * (float)animationWrapper.StartFrame;
+                }
+
+                // if local time is before the last frame, the current hand pose is evaluated at localTime and the status bars of both hands are updated
+                if (localTime < Duration * (float)animationWrapper.EndFrame && !startAgain)
+                {
+                    Evaluate();
+                }
+                // when local time reaches the end of the animation, it is reset to the time of the first frame. 
+                // in study mode, pausing is activated after each iteration, s.t. each animation is only played once. 
+                else
+                {
+                    localTime = Duration * (float)animationWrapper.StartFrame;
+                    startAgain = false;
+                }
+            }
         }
     }
 

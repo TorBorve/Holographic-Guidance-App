@@ -12,7 +12,7 @@ namespace Tutorials
     /// A used-defined marker on the input animation timeline.
     /// </summary>
     [Serializable]
-    public class InputAnimationMarker
+    public class InputAnimationMarker : ICloneable
     {
         /// <summary>
         /// Placement of the marker relative to the input animation start time.
@@ -23,13 +23,21 @@ namespace Tutorials
         /// Custom name of the marker.
         /// </summary>
         public string name = "";
+
+        public object Clone()
+        {
+            var copy = new InputAnimationMarker();
+            copy.time = time;
+            copy.name = (string)name.Clone();
+            return copy;
+        }
     }
 
     /// <summary>
     /// Contains a set of animation curves that describe motion of camera and hands.
     /// </summary>
     [System.Serializable]
-    public class InputAnimation
+    public class InputAnimation : ICloneable
     {
         protected static readonly int jointCount = Enum.GetNames(typeof(TrackedHandJoint)).Length;
 
@@ -80,8 +88,10 @@ namespace Tutorials
         /// <summary>
         /// Class that contains all animation curves for one joint / object (position and rotation)
         /// </summary>
-        public class PoseCurves
+        public class PoseCurves : ICloneable
         {
+            public static int CURVE_COUNT = 17;
+
             public AnimationCurve PositionX = new AnimationCurve();
             public AnimationCurve PositionY = new AnimationCurve();
             public AnimationCurve PositionZ = new AnimationCurve();
@@ -92,6 +102,17 @@ namespace Tutorials
             public AnimationCurve ScaleX = new AnimationCurve();
             public AnimationCurve ScaleY = new AnimationCurve();
             public AnimationCurve ScaleZ = new AnimationCurve();
+
+            public AnimationCurve GlobalPositionX = new AnimationCurve();
+            public AnimationCurve GlobalPositionY = new AnimationCurve();
+            public AnimationCurve GlobalPositionZ = new AnimationCurve();
+            public AnimationCurve GlobalRotationX = new AnimationCurve();
+            public AnimationCurve GlobalRotationY = new AnimationCurve();
+            public AnimationCurve GlobalRotationZ = new AnimationCurve();
+            public AnimationCurve GlobalRotationW = new AnimationCurve();
+            //public AnimationCurve LocalScaleX = new AnimationCurve();
+            //public AnimationCurve LocalScaleY = new AnimationCurve();
+            //public AnimationCurve LocalScaleZ = new AnimationCurve();
 
             public void AddKey(float time, MixedRealityPose pose)
             {
@@ -119,6 +140,19 @@ namespace Tutorials
                 AddFloatKey(ScaleX, time, transformData.scalex);
                 AddFloatKey(ScaleY, time, transformData.scaley);
                 AddFloatKey(ScaleZ, time, transformData.scalez);
+
+                AddFloatKey(GlobalPositionX, time, transformData.globPosx);
+                AddFloatKey(GlobalPositionY, time, transformData.globPosy);
+                AddFloatKey(GlobalPositionZ, time, transformData.globPosz);
+
+                AddFloatKey(GlobalRotationX, time, transformData.globRotx);
+                AddFloatKey(GlobalRotationY, time, transformData.globRoty);
+                AddFloatKey(GlobalRotationZ, time, transformData.globRotz);
+                AddFloatKey(GlobalRotationW, time, transformData.globRotw);
+
+                //AddFloatKey(LocalScaleX, time, transformData.locscalex);
+                //AddFloatKey(LocalScaleY, time, transformData.locscaley);
+                //AddFloatKey(LocalScaleZ, time, transformData.locscalez);
             }
 
             /// <summary>
@@ -144,10 +178,102 @@ namespace Tutorials
                                                 RotationW.Evaluate(time),
                                                 ScaleX.Evaluate(time),
                                                 ScaleY.Evaluate(time),
-                                                ScaleZ.Evaluate(time));
-
-
+                                                ScaleZ.Evaluate(time),
+                                                GlobalPositionX.Evaluate(time),
+                                                GlobalPositionY.Evaluate(time),
+                                                GlobalPositionZ.Evaluate(time),
+                                                GlobalRotationX.Evaluate(time),
+                                                GlobalRotationY.Evaluate(time),
+                                                GlobalRotationZ.Evaluate(time),
+                                                GlobalRotationW.Evaluate(time));
+                                                //LocalScaleX.Evaluate(time),
+                                                //LocalScaleY.Evaluate(time),
+                                                //LocalScaleZ.Evaluate(time));
                 return transformData;
+            }
+
+            public List<AnimationCurve> GetAnimationCurves()
+            {
+                List<AnimationCurve> result = new List<AnimationCurve>();
+                result.Add(PositionX);
+                result.Add(PositionY);
+                result.Add(PositionZ);
+                result.Add(RotationX);
+                result.Add(RotationY);
+                result.Add(RotationZ);
+                result.Add(RotationW);
+                result.Add(ScaleX);
+                result.Add(ScaleY);
+                result.Add(ScaleZ);
+
+                result.Add(GlobalPositionX);
+                result.Add(GlobalPositionY);
+                result.Add(GlobalPositionZ);
+                result.Add(GlobalRotationX);
+                result.Add(GlobalRotationY);
+                result.Add(GlobalRotationZ);
+                result.Add(GlobalRotationW);
+                //result.Add(LocalScaleX);
+                //result.Add(LocalScaleY);
+                //result.Add(LocalScaleZ);
+                return result;
+            }
+
+            public static PoseCurves FromAnimationCurves(List<AnimationCurve> curves)
+            {
+                if (curves.Count != CURVE_COUNT)
+                {
+                    return null;
+                }
+                PoseCurves result = new PoseCurves();
+                result.PositionX = curves[0];
+                result.PositionY = curves[1];
+                result.PositionZ = curves[2];
+                result.RotationX = curves[3];
+                result.RotationY = curves[4];
+                result.RotationZ = curves[5];
+                result.RotationW = curves[6];
+                result.ScaleX = curves[7];
+                result.ScaleY = curves[8];
+                result.ScaleZ = curves[9];
+
+                result.GlobalPositionX = curves[10];
+                result.GlobalPositionY = curves[11];
+                result.GlobalPositionZ = curves[12];
+                result.GlobalRotationX = curves[13];
+                result.GlobalRotationY = curves[14];
+                result.GlobalRotationZ = curves[15];
+                result.GlobalRotationW = curves[16];
+                //result.LocalScaleX = curves[17];
+                //result.LocalScaleY = curves[18];
+                //result.LocalScaleZ = curves[19];
+                return result;
+            }
+
+            public void Prune(float startTime = float.MinValue, float endTime = float.MaxValue)
+            {
+                foreach (var curve in GetAnimationCurves())
+                {
+                    while (curve.length > 0 && curve.keys[0].time < startTime)
+                    {
+                        curve.RemoveKey(0);
+                    }
+                    int idx = curve.length - 1;
+                    while (idx >= 0 && curve.keys[idx].time > endTime)
+                    {
+                        curve.RemoveKey(idx--);
+                    }
+                }
+            }
+
+            public object Clone()
+            {
+                var curves = GetAnimationCurves();
+                for (int i = 0; i < curves.Count; ++i)
+                {
+                    curves[i] = InputAnimation.Clone(curves[i]);
+                }
+                return FromAnimationCurves(curves);
             }
         }
 
@@ -213,16 +339,22 @@ namespace Tutorials
         private AnimationCurve handPinchCurveLeft;
         [SerializeField]
         private AnimationCurve handPinchCurveRight;
+        //[SerializeField]
+        //private AnimationCurve handGripCurveLeft;
+        //[SerializeField]
+        //private AnimationCurve handGripCurveRight;
         [SerializeField]
-        private Dictionary<TrackedHandJoint, PoseCurves> handJointCurvesLeft;
+        public Dictionary<TrackedHandJoint, PoseCurves> handJointCurvesLeft;
         [SerializeField]
-        private Dictionary<TrackedHandJoint, PoseCurves> handJointCurvesRight;
+        public Dictionary<TrackedHandJoint, PoseCurves> handJointCurvesRight;
         [SerializeField]
         private PoseCurves cameraCurves;
         [SerializeField]
         private PoseCurves gazeCurves;
         [SerializeField]
         public Dictionary<string, PoseCurves> objectCurves;
+
+        //public MixedRealityPose qrCoordinate;
 
         /// <summary>
         /// Whether the animation has hand state and joint curves
@@ -256,12 +388,49 @@ namespace Tutorials
             handTrackedCurveRight = new AnimationCurve();
             handPinchCurveLeft = new AnimationCurve();
             handPinchCurveRight = new AnimationCurve();
+            //handGripCurveLeft = new AnimationCurve();
+            //handGripCurveRight = new AnimationCurve();
             handJointCurvesLeft = new Dictionary<TrackedHandJoint, PoseCurves>();
             handJointCurvesRight = new Dictionary<TrackedHandJoint, PoseCurves>();
             cameraCurves = new PoseCurves();
             gazeCurves = new PoseCurves();
             objectCurves = new Dictionary<string, PoseCurves>();
             markers = new List<InputAnimationMarker>();
+            //qrCoordinate = new MixedRealityPose();
+            //referenceCoordinate = new Transform;
+        }
+
+        public object Clone()
+        {
+            var copy = new InputAnimation();
+
+            copy.handTrackedCurveLeft = Clone(handTrackedCurveLeft);
+            copy.handTrackedCurveRight = Clone(handTrackedCurveRight);
+            copy.handPinchCurveLeft = Clone(handPinchCurveLeft);
+            copy.handPinchCurveRight = Clone(handPinchCurveRight);
+            //copy.handGripCurveLeft = Clone(handGripCurveLeft);
+            //copy.handGripCurveRight = Clone(handGripCurveRight);
+            foreach (var item in handJointCurvesLeft)
+            {
+                copy.handJointCurvesLeft.Add(item.Key, (PoseCurves)item.Value.Clone());
+            }
+            foreach (var item in handJointCurvesRight)
+            {
+                copy.handJointCurvesRight.Add(item.Key, (PoseCurves)item.Value.Clone());
+            }
+            copy.cameraCurves = (PoseCurves)cameraCurves.Clone();
+            copy.gazeCurves = (PoseCurves)gazeCurves.Clone();
+            foreach (var item in objectCurves)
+            {
+                copy.objectCurves.Add(item.Key, (PoseCurves)item.Value.Clone());
+            }
+            foreach (var item in markers)
+            {
+                copy.markers.Add((InputAnimationMarker)item.Clone());
+            }
+            //copy.qrCoordinate = new MixedRealityPose(qrCoordinate.Position, qrCoordinate.Rotation);
+
+            return copy;
         }
 
         /// <summary>
@@ -281,159 +450,80 @@ namespace Tutorials
         }
 
         /// <summary>
-        /// Add a keyframe for one hand joint.
-        /// </summary>
-        [Obsolete("Use FromRecordingBuffer to construct new InputAnimations")]
-        public void AddHandJointKey(float time, Handedness handedness, TrackedHandJoint joint, MixedRealityPose jointPose, float positionThreshold, float rotationThreshold)
-        {
-            if (handedness == Handedness.Left)
-            {
-                AddHandJointKey(time, joint, jointPose, handJointCurvesLeft, positionThreshold, rotationThreshold);
-            }
-            else if (handedness == Handedness.Right)
-            {
-                AddHandJointKey(time, joint, jointPose, handJointCurvesRight, positionThreshold, rotationThreshold);
-            }
-        }
-
-        /// <summary>
-        /// Add a keyframe for the camera transform.
-        /// </summary>
-        [Obsolete("Use FromRecordingBuffer to construct new InputAnimations")]
-        public void AddCameraPoseKey(float time, MixedRealityPose cameraPose, float positionThreshold, float rotationThreshold)
-        {
-            AddPoseKeyFiltered(cameraCurves, time, cameraPose, positionThreshold, rotationThreshold);
-
-            duration = Mathf.Max(duration, time);
-        }
-
-        /// <summary>
-        /// Add a user-defined marker.
-        /// </summary>
-        public void AddMarker(InputAnimationMarker marker)
-        {
-            int index = FindMarkerInterval(marker.time) + 1;
-            markers.Insert(index, marker);
-        }
-
-        /// <summary>
-        /// Remove the user-defined marker at the given index.
-        /// </summary>
-        public void RemoveMarker(int index)
-        {
-            markers.RemoveAt(index);
-        }
-
-        /// <summary>
-        /// Change the time of the marker at the given index.
-        /// </summary>
-        public void SetMarkerTime(int index, float time)
-        {
-            var marker = markers[index];
-            markers.RemoveAt(index);
-
-            int newIndex = FindMarkerInterval(time) + 1;
-            marker.time = time;
-            markers.Insert(newIndex, marker);
-        }
-
-        /// <summary>
-        /// Remove all keyframes from all animation curves.
-        /// </summary>
-        public void Clear()
-        {
-            foreach (var curve in GetAllAnimationCurves())
-            {
-                curve.keys = new Keyframe[0];
-            }
-        }
-
-        /// <summary>
-        /// Remove all keyframes from all animation curves with time values before the given cutoff time.
-        /// </summary>
-        /// <remarks>
-        /// <para>If keyframes exists before the cutoff time then one preceding keyframe will be retained,
-        /// so that interpolation at the cutoff time yields the same result.</para>
-        /// </remarks>
-        [Obsolete("Cutoff is achieved in InputRecordingBuffer")]
-        public void CutoffBeforeTime(float time)
-        {
-            foreach (var curve in GetAllAnimationCurves())
-            {
-                CutoffBeforeTime(curve, time);
-            }
-        }
-
-        public async Task<byte[]> ToBinary()
-        {
-            MemoryStream stream = new MemoryStream();
-            await this.ToStreamAsync(stream);
-            return stream.ToArray();
-        }
-
-        /// <summary>
         /// Serialize animation data into a stream.
         /// </summary>
-        public void ToStream(Stream stream)
+        public void ToStream(StreamWriter writer, TransformData aspor = null)
         {
-            var writer = new BinaryWriter(stream);
-
-            InputAnimationSerializationUtils.WriteHeader(writer);
-            writer.Write(HasCameraPose);
-            writer.Write(HasHandData);
-            writer.Write(HasEyeGaze);
-
             var defaultCurves = new PoseCurves();
-
-            if (HasCameraPose)
-            {
-                PoseCurvesToStream(writer, cameraCurves);
+            if (aspor == null) {
+                aspor = TransformData.ZeroIdentity();
             }
+            InputAnimationSerializationUtils.WriteHeader(writer);
+            writer.WriteLine(HasCameraPose);
+            writer.WriteLine(HasHandData);
+            writer.WriteLine(HasEyeGaze);
 
-            if (HasHandData)
-            {
-                InputAnimationSerializationUtils.WriteBoolCurve(writer, handTrackedCurveLeft);
-                InputAnimationSerializationUtils.WriteBoolCurve(writer, handTrackedCurveRight);
-                InputAnimationSerializationUtils.WriteBoolCurve(writer, handPinchCurveLeft);
-                InputAnimationSerializationUtils.WriteBoolCurve(writer, handPinchCurveRight);
+            writer.WriteLine("REFERENCE_COORDINATE_SYSTEM");
+            writer.WriteLine(aspor.posx + ", " + aspor.posy + ", " + aspor.posz + ", "
+                + aspor.rotx + ", " + aspor.roty + ", " + aspor.rotz + ", " + aspor.rotw
+                + ", " + aspor.scalex + ", " + aspor.scaley + ", " + aspor.scalez
+                +", " + aspor.globPosx + ", " + aspor.globPosy + ", " + aspor.globPosz
+                + ", " + aspor.globRotx + ", " + aspor.globRoty + ", " + aspor.globRotz + ", " + aspor.globRotw);
+                //+ ", " + aspor.locscalex + ", " + aspor.locscaley + ", " + aspor.locscalez);
 
-                for (int i = 0; i < jointCount; ++i)
+            writer.WriteLine("HEAD_POSES");
+            CurvesToStream(writer, cameraCurves.GetAnimationCurves());
+
+            writer.WriteLine("LEFT_HAND_POSES");
+            List<AnimationCurve> leftHandCurves = new List<AnimationCurve>
                 {
-                    if (!handJointCurvesLeft.TryGetValue((TrackedHandJoint)i, out var curves))
-                    {
-                        curves = defaultCurves;
-                    }
-                    PoseCurvesToStream(writer, curves);
-                }
-
-
-                for (int i = 0; i < jointCount; ++i)
-                {
-                    if (!handJointCurvesRight.TryGetValue((TrackedHandJoint)i, out var curves))
-                    {
-                        curves = defaultCurves;
-                    }
-                    PoseCurvesToStream(writer, curves);
-                }
-
-            }
-
-            if (HasEyeGaze)
+                    //handGripCurveLeft,
+                    handPinchCurveLeft,
+                    handTrackedCurveLeft
+                };
+            // TrackedHandJoint 0 is None, so we can start with Index 1
+            for (int i = 1; i < jointCount; ++i)
             {
-                PoseCurvesToStream(writer, gazeCurves);
+                if (!handJointCurvesLeft.TryGetValue((TrackedHandJoint)i, out var curves))
+                {
+                    curves = defaultCurves;
+                }
+                leftHandCurves.AddRange(curves.GetAnimationCurves());
             }
+            CurvesToStream(writer, leftHandCurves);
+
+            writer.WriteLine("RIGHT_HAND_POSES");
+            List<AnimationCurve> rightHandCurves = new List<AnimationCurve>
+                {
+                    //handGripCurveRight,
+                    handPinchCurveRight,
+                    handTrackedCurveRight
+                };
+            // TrackedHandJoint 0 is None, so we can start with Index 1
+            for (int i = 1; i < jointCount; ++i)
+            {
+                if (!handJointCurvesRight.TryGetValue((TrackedHandJoint)i, out var curves))
+                {
+                    curves = defaultCurves;
+                }
+                rightHandCurves.AddRange(curves.GetAnimationCurves());
+            }
+            CurvesToStream(writer, rightHandCurves);
+
+            writer.WriteLine("EYE_GAZE");
+            CurvesToStream(writer, gazeCurves.GetAnimationCurves());
 
             ObjectCurvesToStream(writer, objectCurves);
-            
+
             InputAnimationSerializationUtils.WriteMarkerList(writer, markers);
         }
 
         /// <summary>
         /// Serialize animation data into a stream asynchronously.
         /// </summary>
-        public async Task ToStreamAsync(Stream stream, Action callback = null)
+        public async Task ToStreamAsync(StreamWriter stream, TransformData aspor = null, Action callback = null)
         {
-            await Task.Run(() => ToStream(stream));
+            await Task.Run(() => ToStream(stream, aspor));
 
             callback?.Invoke();
         }
@@ -494,6 +584,175 @@ namespace Tutorials
             return lowIdx;
         }
 
+        /*public double[] EvaluateGlobalJoint(out int stepCount, int numSteps = 1000)
+        {
+
+            int keyframeCount = handTrackedCurveLeft.length;
+            int count = 0;
+            int[] validJoints = new int[] { 1, 3, 4, 5, 6, 8, 9, 10, 11, 13, 14, 15, 16, 18, 19, 20, 21, 23, 24, 25, 26 };
+            double[] handJoints = new double[numSteps * validJoints.Length * 2 * 3];
+
+            int startTimeIdx;
+            if (keyframeCount <= numSteps)
+            {
+                startTimeIdx = 0;
+                stepCount = keyframeCount;
+            }
+            else
+            {
+                startTimeIdx = keyframeCount - numSteps;
+                stepCount = numSteps;
+            }
+            for (var stepIdx = 0; stepIdx < stepCount; stepIdx++)
+            {
+                var time = handTrackedCurveLeft.keys[startTimeIdx + stepIdx].time;
+                foreach (var joint in validJoints)
+                {
+                    var leftData = EvaluateHandJoint(time, Handedness.Left, (TrackedHandJoint)joint);
+
+                    handJoints[count] = (double)leftData.posx;
+                    count++;
+                    handJoints[count] = (double)leftData.posy;
+                    count++;
+                    handJoints[count] = (double)leftData.posz;
+                    count++;
+                }
+                foreach (var joint in validJoints)
+                {
+                    var rightData = EvaluateHandJoint(time, Handedness.Right, (TrackedHandJoint)joint);
+
+                    handJoints[count] = (double)rightData.posx;
+                    count++;
+                    handJoints[count] = (double)rightData.posy;
+                    count++;
+                    handJoints[count] = (double)rightData.posz;
+                    count++;
+                }
+            }
+            //handTrackedCurveLeft.keys[1].;
+            //Debug.Log($"data: {rightData.posx}");
+
+            return handJoints;
+
+        }
+
+
+        public double[] EvaluateQRJoint(out int stepCount, int numSteps = 1000)
+        {
+
+            int keyframeCount = handTrackedCurveLeft.length;
+            int count = 0;
+            int[] validJoints = new int[] { 1, 3, 4, 5, 6, 8, 9, 10, 11, 13, 14, 15, 16, 18, 19, 20, 21, 23, 24, 25, 26 };
+            double[] handJoints = new double[numSteps * validJoints.Length * 2 * 3];
+
+            int startTimeIdx;
+            if (keyframeCount <= numSteps)
+            {
+                startTimeIdx = 0;
+                stepCount = keyframeCount;
+            }
+            else
+            {
+                startTimeIdx = keyframeCount - numSteps;
+                stepCount = numSteps;
+            }
+
+
+
+            for (var stepIdx = 0; stepIdx < stepCount; stepIdx++)
+            {
+                var time = handTrackedCurveLeft.keys[startTimeIdx + stepIdx].time;
+                foreach (var joint in validJoints)
+                {
+                    var leftData = EvaluateHandJoint(time, Handedness.Left, (TrackedHandJoint)joint);
+                    Vector3 leftLoc = leftData.GetGlobalPosition();
+                    leftLoc = Quaternion.Inverse(qrCoordinate.Rotation) * (leftLoc - qrCoordinate.Position);
+                    handJoints[count] = (double)leftLoc[0];// - qrCoordinate.Position[0];
+                    count++;
+                    handJoints[count] = (double)leftLoc[1];
+                    count++;
+                    handJoints[count] = (double)leftLoc[2];
+                    count++;
+                }
+                foreach (var joint in validJoints)
+                {
+                    var rightData = EvaluateHandJoint(time, Handedness.Right, (TrackedHandJoint)joint);
+                    Vector3 rightLoc = rightData.GetGlobalPosition();
+                    rightLoc = Quaternion.Inverse(qrCoordinate.Rotation) * (rightLoc - qrCoordinate.Position);
+                    handJoints[count] = (double)rightLoc[0];
+                    count++;
+                    handJoints[count] = (double)rightLoc[1];
+                    count++;
+                    handJoints[count] = (double)rightLoc[2];
+                    count++;
+                }
+            }
+            //handTrackedCurveLeft.keys[1].;
+            //Debug.Log($"data: {rightData.posx}");
+
+            return handJoints;
+
+        }
+
+
+        public float[] EvaluateQRJointFloat(out int stepCount, int numSteps = 1000)
+        {
+
+            int keyframeCount = handTrackedCurveLeft.length;
+            int count = 0;
+            int[] validJoints = new int[] { 1, 3, 4, 5, 6, 8, 9, 10, 11, 13, 14, 15, 16, 18, 19, 20, 21, 23, 24, 25, 26 };
+            float[] handJoints = new float[numSteps * validJoints.Length * 2 * 3];
+
+            int startTimeIdx;
+            if (keyframeCount < numSteps)
+            {
+                startTimeIdx = 0;
+                stepCount = keyframeCount;
+            }
+            else
+            {
+                startTimeIdx = keyframeCount - numSteps;
+                stepCount = numSteps - 1;
+            }
+
+
+
+            for (var stepIdx = 0; stepIdx < stepCount; stepIdx++)
+            {
+                var time = handTrackedCurveLeft.keys[startTimeIdx + stepIdx].time;
+                foreach (var joint in validJoints)
+                {
+                    var leftData = EvaluateHandJoint(time, Handedness.Left, (TrackedHandJoint)joint);
+                    Vector3 leftLoc = leftData.GetGlobalPosition();
+
+                    leftLoc = Quaternion.Inverse(qrCoordinate.Rotation) * (leftLoc - qrCoordinate.Position);
+                    handJoints[count] = leftLoc[0];// - qrCoordinate.Position[0];
+                    count++;
+                    handJoints[count] = leftLoc[1];
+                    count++;
+                    handJoints[count] = leftLoc[2];
+                    count++;
+                }
+                foreach (var joint in validJoints)
+                {
+                    var rightData = EvaluateHandJoint(time, Handedness.Right, (TrackedHandJoint)joint);
+                    Vector3 rightLoc = rightData.GetGlobalPosition();
+                    rightLoc = Quaternion.Inverse(qrCoordinate.Rotation) * (rightLoc - qrCoordinate.Position);
+                    handJoints[count] = rightLoc[0];
+                    count++;
+                    handJoints[count] = rightLoc[1];
+                    count++;
+                    handJoints[count] = rightLoc[2];
+                    count++;
+                }
+            }
+            //handTrackedCurveLeft.keys[1].;
+            //Debug.Log($"data: {rightData.posx}");
+
+            return handJoints;
+
+        }
+        */
         /// <summary>
         /// Evaluate joint pose at the given time.
         /// </summary>
@@ -541,7 +800,6 @@ namespace Tutorials
             return cameraCurves.Evaluate(time);
         }
 
-
         /// <summary>
         /// Generates an input animation from the contents of a recording buffer.
         /// </summary>
@@ -549,19 +807,32 @@ namespace Tutorials
         public static InputAnimation FromRecordingBuffer(InputRecordingBuffer recordingBuffer)
         {
             var animation = new InputAnimation();
+            if (recordingBuffer.Empty())
+                return animation;
             float startTime = recordingBuffer.StartTime;
-
-            animation.HasHandData = true;
 
             foreach (var keyframe in recordingBuffer)
             {
                 float localTime = keyframe.Time - startTime;
 
+                animation.HasHandData |= keyframe.LeftTracked | keyframe.RightTracked;
+                AddBoolKey(animation.handTrackedCurveLeft, localTime, keyframe.LeftTracked);
+                AddBoolKey(animation.handTrackedCurveRight, localTime, keyframe.RightTracked);
+                AddBoolKey(animation.handPinchCurveLeft, localTime, keyframe.LeftPinch);
+                AddBoolKey(animation.handPinchCurveRight, localTime, keyframe.RightPinch);
+                //AddBoolKey(animation.handGripCurveLeft, localTime, keyframe.LeftGrip);
+                //AddBoolKey(animation.handGripCurveRight, localTime, keyframe.RightGrip);
 
-                AddBoolKeyIfChanged(animation.handTrackedCurveLeft, localTime, keyframe.LeftTracked);
-                AddBoolKeyIfChanged(animation.handTrackedCurveRight, localTime, keyframe.RightTracked);
-                AddBoolKeyIfChanged(animation.handPinchCurveLeft, localTime, keyframe.LeftPinch);
-                AddBoolKeyIfChanged(animation.handPinchCurveRight, localTime, keyframe.RightPinch);
+                /*if (keyframe.HasCameraPose)
+                {
+                    animation.HasCameraPose = true;
+                    animation.cameraCurves.AddKey(localTime, keyframe.CameraPose);
+                }
+                if (keyframe.HasGazePose)
+                {
+                    animation.HasEyeGaze = true;
+                    animation.gazeCurves.AddKey(localTime, keyframe.GazePose);
+                }  */
 
                 foreach (var joint in (TrackedHandJoint[])Enum.GetValues(typeof(TrackedHandJoint)))
                 {
@@ -587,32 +858,6 @@ namespace Tutorials
 
                 AddBoolKey(curve, time, value);
             }
-
-            void AddJointPoseKeys(Dictionary<TrackedHandJoint, PoseCurves> jointCurves, Dictionary<TrackedHandJoint, TransformData> jointsTransformData, TrackedHandJoint joint, float time)
-            {
-                if (!jointsTransformData.TryGetValue(joint, out var transformData))
-                {
-                    return;
-                }
-
-                if (!jointCurves.TryGetValue(joint, out var curves))
-                {
-                    curves = new PoseCurves();
-                    jointCurves.Add(joint, curves);
-                }
-
-                curves.AddKey(time, transformData);
-            }
-
-            void AddObjectPoseKeys(Dictionary<string, PoseCurves> objectCurves, TransformData objectTransform, string objectName, float time)
-            {
-                if (!objectCurves.TryGetValue(objectName, out var curves))
-                {
-                    curves = new PoseCurves();
-                    objectCurves.Add(objectName, curves);
-                }
-                curves.AddKey(time, objectTransform);
-            }
         }
 
         /// <summary>
@@ -621,58 +866,106 @@ namespace Tutorials
         public static InputAnimation FromStream(Stream stream)
         {
             var animation = new InputAnimation();
-            var reader = new BinaryReader(stream);
+            var reader = new StreamReader(stream);
 
             InputAnimationSerializationUtils.ReadHeader(reader);
+            animation.HasCameraPose = bool.Parse(reader.ReadLine());
+            animation.HasHandData = bool.Parse(reader.ReadLine());
+            animation.HasEyeGaze = bool.Parse(reader.ReadLine());
 
-            animation.HasCameraPose = reader.ReadBoolean();
-            animation.HasHandData = reader.ReadBoolean();
-            animation.HasEyeGaze = reader.ReadBoolean();
-
-            if (animation.HasCameraPose)
+            var header = reader.ReadLine();
+            if (header != "REFERENCE_COORDINATE_SYSTEM")
             {
-                PoseCurvesFromStream(reader, animation.cameraCurves);
+                Debug.LogError("Excepted REFERENCE_COORDINATE_SYSTEM header, got: " + header);
+            }
+            else
+            {
+                // Why the next two lines here?
+                //var curves = CurvesFromStream(reader, PoseCurves.CURVE_COUNT);
+                //animation.cameraCurves = PoseCurves.FromAnimationCurves(curves);
+                float[] val = new float[17];
+                var poseString = reader.ReadLine().Split(',');
+                for (int i = 0; i < 17; i++)
+                {
+                    val[i] = float.Parse(poseString[i]);
+                }
+                TransformData aspor = new TransformData(val[0], val[1], val[2], val[3], val[4], val[5], val[6], val[7], val[8], val[9], val[10], val[11], val[12], val[13], val[14], val[15], val[16]); //, val[17], val[18], val[19]);
+                //Vector3 qrPosition = new Vector3(val[0], val[1], val[2]);
+                //Quaternion qrRotation = new Quaternion(val[3], val[4], val[5], val[6]);
+
+                //animation.qrCoordinate = new MixedRealityPose(qrPosition, qrRotation);
+                // aspor is not used currently
+            }
+            header = reader.ReadLine();
+            if (header != "HEAD_POSES")
+            {
+                Debug.LogError("Excepted HEAD_POSES header, got: " + header);
+            } else
+            {
+                var curves = CurvesFromStream(reader, PoseCurves.CURVE_COUNT);
+                animation.cameraCurves = PoseCurves.FromAnimationCurves(curves);
             }
 
-            if (animation.HasHandData)
+            header = reader.ReadLine();
+            if (header != "LEFT_HAND_POSES")
             {
-                InputAnimationSerializationUtils.ReadBoolCurve(reader, animation.handTrackedCurveLeft);
-                InputAnimationSerializationUtils.ReadBoolCurve(reader, animation.handTrackedCurveRight);
-                InputAnimationSerializationUtils.ReadBoolCurve(reader, animation.handPinchCurveLeft);
-                InputAnimationSerializationUtils.ReadBoolCurve(reader, animation.handPinchCurveRight);
+                Debug.LogError("Excepted LEFT_HAND_POSES header, got: " + header);
+            } else
+            {
+                var curves = CurvesFromStream(reader, 2 + PoseCurves.CURVE_COUNT * (jointCount - 1));
+                //animation.handGripCurveLeft = curves[0];
+                animation.handPinchCurveLeft = curves[0];
+                animation.handTrackedCurveLeft = curves[1];
 
-                for (int i = 0; i < jointCount; ++i)
+                // TrackedHandJoint 0 is None, so we can start with Index 1
+                for (int i = 1; i < jointCount; ++i)
                 {
-                    if (!animation.handJointCurvesLeft.TryGetValue((TrackedHandJoint)i, out var curves))
+                    List<AnimationCurve> jointCurves = new List<AnimationCurve>();
+                    for (int j = 0; j < PoseCurves.CURVE_COUNT; ++j)
                     {
-                        curves = new PoseCurves();
-                        animation.handJointCurvesLeft.Add((TrackedHandJoint)i, curves);
+                        jointCurves.Add(curves[2 + PoseCurves.CURVE_COUNT * (i - 1) + j]);
                     }
-
-                    PoseCurvesFromStream(reader, curves);
+                    PoseCurves poseCurve = PoseCurves.FromAnimationCurves(jointCurves);
+                    animation.handJointCurvesLeft.Add((TrackedHandJoint)i, poseCurve);
                 }
+            }
+            header = reader.ReadLine();
+            if (header != "RIGHT_HAND_POSES")
+            {
+                Debug.LogError("Excepted RIGHT_HAND_POSES header, got: " + header);
+            }
+            else
+            {
+                var curves = CurvesFromStream(reader, 2 + PoseCurves.CURVE_COUNT * (jointCount - 1));
+                //animation.handGripCurveRight = curves[0];
+                animation.handPinchCurveRight = curves[0];
+                animation.handTrackedCurveRight = curves[1];
 
-
-                for (int i = 0; i < jointCount; ++i)
+                // TrackedHandJoint 0 is None, so we can start with Index 1
+                for (int i = 1; i < jointCount; ++i)
                 {
-                    if (!animation.handJointCurvesRight.TryGetValue(key: (TrackedHandJoint)i, out var curves))
+                    List<AnimationCurve> jointCurves = new List<AnimationCurve>();
+                    for(int j = 0; j < PoseCurves.CURVE_COUNT; ++j)
                     {
-                        curves = new PoseCurves();
-                        animation.handJointCurvesRight.Add((TrackedHandJoint)i, curves);
+                        jointCurves.Add(curves[2 + PoseCurves.CURVE_COUNT * (i - 1) + j]);
                     }
-
-                    PoseCurvesFromStream(reader, curves);
+                    PoseCurves poseCurve = PoseCurves.FromAnimationCurves(jointCurves);
+                    animation.handJointCurvesRight.Add((TrackedHandJoint)i, poseCurve);
                 }
-
             }
 
-            if (animation.HasEyeGaze)
+            header = reader.ReadLine();
+            if (header != "EYE_GAZE")
             {
-                PoseCurvesFromStream(reader, animation.gazeCurves);
+                Debug.LogError("Excepted EYE_GAZE header, got: " + header);
+            }
+            else
+            {
+                var curves = CurvesFromStream(reader, PoseCurves.CURVE_COUNT);
+                animation.gazeCurves = PoseCurves.FromAnimationCurves(curves);
             }
 
             ObjectCurvesFromStream(reader, animation.objectCurves);
-
 
             InputAnimationSerializationUtils.ReadMarkerList(reader, animation.markers);
             animation.ComputeDuration();
@@ -704,93 +997,36 @@ namespace Tutorials
             duration = Mathf.Max(duration, time);
         }
 
-
-        /// <summary>
-        /// Add a keyframe for one hand joint.
-        /// </summary>
-        [Obsolete("Use FromRecordingBuffer to construct new InputAnimations")]
-        private void AddHandJointKey(float time, TrackedHandJoint joint, MixedRealityPose jointPose, Dictionary<TrackedHandJoint, PoseCurves> jointCurves, float positionThreshold, float rotationThreshold)
-        {
-            if (!jointCurves.TryGetValue(joint, out var curves))
-            {
-                curves = new PoseCurves();
-                jointCurves.Add(joint, curves);
-            }
-
-            AddPoseKeyFiltered(curves, time, jointPose, positionThreshold, rotationThreshold);
-
-            duration = Mathf.Max(duration, time);
-        }
-
-        [Obsolete("Use FromRecordingBuffer to construct new InputAnimations")]
-        private void CutoffBeforeTime(AnimationCurve curve, float time)
-        {
-            // Keep the keyframe before the cutoff time to ensure correct value at the beginning
-            int idx0 = FindKeyframeInterval(curve, time);
-            if (idx0 > 0)
-            {
-                var newKeys = new Keyframe[curve.keys.Length - idx0];
-                for (int i = 0; i < newKeys.Length; ++i)
-                {
-                    newKeys[i] = curve.keys[idx0 + i];
-                }
-                curve.keys = newKeys;
-            }
-        }
-
-        /// <summary>
-        /// Make sure the pose animation curves for the given hand joint exist.
-        /// </summary>
-        [Obsolete("Unused")]
-        private PoseCurves CreateHandJointCurves(Handedness handedness, TrackedHandJoint joint)
-        {
-            if (handedness == Handedness.Left)
-            {
-                if (!handJointCurvesLeft.TryGetValue(joint, out var curves))
-                {
-                    curves = new PoseCurves();
-                    handJointCurvesLeft.Add(joint, curves);
-                }
-                return curves;
-            }
-            else if (handedness == Handedness.Right)
-            {
-                if (!handJointCurvesRight.TryGetValue(joint, out var curves))
-                {
-                    curves = new PoseCurves();
-                    handJointCurvesRight.Add(joint, curves);
-                }
-                return curves;
-            }
-            return null;
-        }
-
-        /// <summary>
-        /// Get animation curves for the pose of the given hand joint, if they exist.
-        /// </summary>
-        //[Obsolete("Use EvaluateHandJoint to get joint pose data")]
-        public bool TryGetHandJointCurves(Handedness handedness, TrackedHandJoint joint, out PoseCurves curves)
-        {
-            if (handedness == Handedness.Left)
-            {
-                return handJointCurvesLeft.TryGetValue(joint, out curves);
-            }
-            else if (handedness == Handedness.Right)
-            {
-                return handJointCurvesRight.TryGetValue(joint, out curves);
-            }
-            curves = null;
-            return false;
-        }
-
         public void ComputeDuration()
         {
             duration = 0.0f;
             foreach (var curve in GetAllAnimationCurves())
             {
-                float curveDuration = (curve.length > 0 ? curve.keys[curve.length - 1].time : 0.0f);
+                float curveDuration = (curve.length > 0 ? curve.keys[curve.length - 1].time - curve.keys[0].time : 0.0f);
                 duration = Mathf.Max(duration, curveDuration);
             }
+        }
+
+        public float getEarliestTimestamp()
+        {
+            float earliest = float.MaxValue;
+            foreach (var curve in GetAllAnimationCurves())
+            {
+                if (curve.length > 0)
+                    earliest = Mathf.Min(earliest, curve.keys[0].time);
+            }
+            return earliest;
+        }
+
+        public float GetLatestTimestamp()
+        {
+            float latest = 0.0f;
+            foreach (var curve in GetAllAnimationCurves())
+            {
+                if(curve.length > 0)
+                    latest = Mathf.Max(latest, curve.keys[curve.length - 1].time);
+            }
+            return latest;
         }
 
         /// <summary>
@@ -921,6 +1157,32 @@ namespace Tutorials
             curveZ.AddKey(time, vector.z);
         }
 
+        private static void AddJointPoseKeys(Dictionary<TrackedHandJoint, PoseCurves> jointCurves, Dictionary<TrackedHandJoint, TransformData> jointsTransformData, TrackedHandJoint joint, float time)
+        {
+            if (!jointsTransformData.TryGetValue(joint, out var transformData))
+            {
+                return;
+            }
+
+            if (!jointCurves.TryGetValue(joint, out var curves))
+            {
+                curves = new PoseCurves();
+                jointCurves.Add(joint, curves);
+            }
+
+            curves.AddKey(time, transformData);
+        }
+
+        private static void AddObjectPoseKeys(Dictionary<string, PoseCurves> objectCurves, TransformData objectTransform, string objectName, float time)
+        {
+            if (!objectCurves.TryGetValue(objectName, out var curves))
+            {
+                curves = new PoseCurves();
+                objectCurves.Add(objectName, curves);
+            }
+            curves.AddKey(time, objectTransform);
+        }
+
         /// <summary>
         /// Add a pose keyframe to an animation curve.
         /// Keys are only added if the value changes sufficiently.
@@ -999,82 +1261,131 @@ namespace Tutorials
             AddFloatKey(curveW, time, rotation.w);
         }
 
-        private static void PoseCurvesToStream(BinaryWriter writer, PoseCurves curves)
+        private static void CurvesToStream(StreamWriter writer, List<AnimationCurve> curves)
         {
-            InputAnimationSerializationUtils.WriteFloatCurveSimple(writer, curves.PositionX);
-            InputAnimationSerializationUtils.WriteFloatCurveSimple(writer, curves.PositionY);
-            InputAnimationSerializationUtils.WriteFloatCurveSimple(writer, curves.PositionZ);
-
-            InputAnimationSerializationUtils.WriteFloatCurveSimple(writer, curves.RotationX);
-            InputAnimationSerializationUtils.WriteFloatCurveSimple(writer, curves.RotationY);
-            InputAnimationSerializationUtils.WriteFloatCurveSimple(writer, curves.RotationZ);
-            InputAnimationSerializationUtils.WriteFloatCurveSimple(writer, curves.RotationW);
-            
-            InputAnimationSerializationUtils.WriteFloatCurveSimple(writer, curves.ScaleX);
-            InputAnimationSerializationUtils.WriteFloatCurveSimple(writer, curves.ScaleY);
-            InputAnimationSerializationUtils.WriteFloatCurveSimple(writer, curves.ScaleZ);
-        }
-
-        private static void PoseCurvesFromStream(BinaryReader reader, PoseCurves curves)
-        {
-            InputAnimationSerializationUtils.ReadFloatCurveSimple(reader, curves.PositionX);
-            InputAnimationSerializationUtils.ReadFloatCurveSimple(reader, curves.PositionY);
-            InputAnimationSerializationUtils.ReadFloatCurveSimple(reader, curves.PositionZ);
-
-            InputAnimationSerializationUtils.ReadFloatCurveSimple(reader, curves.RotationX);
-            InputAnimationSerializationUtils.ReadFloatCurveSimple(reader, curves.RotationY);
-            InputAnimationSerializationUtils.ReadFloatCurveSimple(reader, curves.RotationZ);
-            InputAnimationSerializationUtils.ReadFloatCurveSimple(reader, curves.RotationW);
-
-            InputAnimationSerializationUtils.ReadFloatCurveSimple(reader, curves.ScaleX);
-            InputAnimationSerializationUtils.ReadFloatCurveSimple(reader, curves.ScaleY);
-            InputAnimationSerializationUtils.ReadFloatCurveSimple(reader, curves.ScaleZ);
-        }
-
-        private static void RayCurvesToStream(BinaryWriter writer, RayCurves curves)
-        {
-            InputAnimationSerializationUtils.WriteFloatCurveSimple(writer, curves.OriginX);
-            InputAnimationSerializationUtils.WriteFloatCurveSimple(writer, curves.OriginY);
-            InputAnimationSerializationUtils.WriteFloatCurveSimple(writer, curves.OriginZ);
-
-            InputAnimationSerializationUtils.WriteFloatCurveSimple(writer, curves.DirectionX);
-            InputAnimationSerializationUtils.WriteFloatCurveSimple(writer, curves.DirectionY);
-            InputAnimationSerializationUtils.WriteFloatCurveSimple(writer, curves.DirectionZ);
-        }
-
-        private static void RayCurvesFromStream(BinaryReader reader, RayCurves curves)
-        {
-            InputAnimationSerializationUtils.ReadFloatCurveSimple(reader, curves.OriginX);
-            InputAnimationSerializationUtils.ReadFloatCurveSimple(reader, curves.OriginY);
-            InputAnimationSerializationUtils.ReadFloatCurveSimple(reader, curves.OriginZ);
-
-            InputAnimationSerializationUtils.ReadFloatCurveSimple(reader, curves.DirectionX);
-            InputAnimationSerializationUtils.ReadFloatCurveSimple(reader, curves.DirectionY);
-            InputAnimationSerializationUtils.ReadFloatCurveSimple(reader, curves.DirectionZ);
-        }
-
-        private static void ObjectCurvesToStream(BinaryWriter writer, Dictionary<string, PoseCurves> objectCurves)
-        {
-            writer.Write(objectCurves.Count);
-            foreach(var entry in objectCurves)
+            if (curves == null || curves.Count == 0)
             {
-                writer.Write(entry.Key);
-                PoseCurvesToStream(writer, entry.Value);
+                writer.WriteLine(0);
+                return;
+            }
+
+            int keyframeCount = 0;
+            int longestCurveIdx = -1;
+            for (int i = 0; i < curves.Count; ++i)
+            {
+                if (curves[i].length > keyframeCount)
+                {
+                    keyframeCount = curves[i].length;
+                    longestCurveIdx = i;
+                }
+            }
+
+            writer.WriteLine(keyframeCount);
+            for (int i = 0; i < keyframeCount; ++i)
+            {
+                var time = curves[longestCurveIdx].keys[i].time;
+                int i_buggy = i;
+                if (i == keyframeCount)
+                {
+                    i_buggy = i - 1;
+                }
+                writer.Write(time);
+                for (int j = 0; j < curves.Count; ++j)
+                {
+                    writer.Write(", ");
+                    if (curves[j].length <= i_buggy || curves[j].keys[i_buggy].time != time)
+                    {
+                        writer.Write(curves[j].Evaluate(time));
+                    } else
+                    {
+                        writer.Write(curves[j].keys[i_buggy].value);
+                    }
+                }
+                writer.WriteLine("");
             }
         }
 
-        private static void ObjectCurvesFromStream(BinaryReader reader, Dictionary<string, PoseCurves> objectCurves)
+        private static List<AnimationCurve> CurvesFromStream(StreamReader reader, int curveCount)
         {
-            int objectCount = reader.ReadInt32();
+            if (curveCount == 0)
+            {
+                return new List<AnimationCurve>();
+            }
+            List<Keyframe[]> keyframes = new List<Keyframe[]>(curveCount);
+            //Debug.Log($"reader.ReadLine(),{reader.ReadLine()}");
+            int keyframeCount = int.Parse(reader.ReadLine());
+            for (int j = 0; j < curveCount; ++j)
+            {
+                keyframes.Add(new Keyframe[keyframeCount]);
+            }
+            for (int i = 0; i < keyframeCount; ++i)
+            {
+                var poseLine = reader.ReadLine();
+                var poseString = poseLine.Split(',');
+                var time = float.Parse(poseString[0]);
+                if (poseString.Length != curveCount + 1)
+                {
+                    string msg = "Expected length " + (curveCount + 1) + ", got " + poseString.Length;
+                    msg += ", Line: " + poseLine;
+                    Debug.LogError(msg);
+                    throw new Exception(msg);
+                }
+                for (int j = 0; j < curveCount; ++j)
+                {
+                    keyframes[j][i].time = time;
+                    try
+                    {
+                        keyframes[j][i].value = float.Parse(poseString[j + 1]);
+                    } catch (Exception e)
+                    {
+                        string msg = e.Message + ", String was: " + poseLine;
+                        Debug.LogError(msg);
+                        throw new Exception(msg);
+                    }
+                    keyframes[j][i].weightedMode = WeightedMode.Both;
+                }
+            }
+            List<AnimationCurve> result = new List<AnimationCurve>(curveCount);
+            for (int j = 0; j < curveCount; ++j)
+            {
+                AnimationCurve curve = new AnimationCurve();
+                curve.keys = keyframes[j];
+                result.Add(curve);
+            }
+            return result;
+        }
+
+        private static void ObjectCurvesToStream(StreamWriter writer, Dictionary<string, PoseCurves> objectCurves)
+        {
+            writer.WriteLine("OBJECT_POSES");
+            writer.WriteLine(objectCurves.Count);
+
+            foreach (var entry in objectCurves)
+            {
+                writer.WriteLine(entry.Key);
+                CurvesToStream(writer, entry.Value.GetAnimationCurves());
+            }
+        }
+
+        private static void ObjectCurvesFromStream(StreamReader reader, Dictionary<string, PoseCurves> objectCurves)
+        {
+            var header = reader.ReadLine();
+            if (header != "OBJECT_POSES")
+            {
+                Debug.LogError("Excepted OBJECT_POSES header, got: " + header);
+                return;
+            }
+            int objectCount = int.Parse(reader.ReadLine());
             for (int i = 0; i < objectCount; i++)
             {
-                string name = reader.ReadString();
-                if (!objectCurves.TryGetValue(name, out var curves))
-                {
-                    curves = new PoseCurves();
-                    objectCurves.Add(name, curves);
-                }
-                PoseCurvesFromStream(reader, curves);
+                string name = reader.ReadLine();
+                var curves = CurvesFromStream(reader, 10);
+                PoseCurves poseCurves = new PoseCurves();
+                poseCurves.PositionX = curves[0];
+                poseCurves.PositionY = curves[1];
+                poseCurves.PositionZ = curves[2];
+                poseCurves.RotationX = curves[3];
+                objectCurves.Add(name, poseCurves);
             }
         }
 
@@ -1377,7 +1688,6 @@ namespace Tutorials
         /// <remarks>
         /// Uses binary search.
         /// </remarks>
-        [Obsolete("Use FromRecordingBuffer to construct new InputAnimations")]
         private static int FindKeyframeInterval(AnimationCurve curve, float time)
         {
             var keys = curve.keys;
@@ -1397,6 +1707,25 @@ namespace Tutorials
             }
             return lowIdx;
         }
-    }
 
+
+        private static AnimationCurve Clone(AnimationCurve curve)
+        {
+            var copy = new AnimationCurve();
+            copy.preWrapMode = curve.preWrapMode;
+            copy.postWrapMode = curve.postWrapMode;
+            foreach (var key in curve.keys)
+            {
+                copy.AddKey(Clone(key));
+            }
+            return copy;
+        }
+
+        private static Keyframe Clone(Keyframe keyframe)
+        {
+            var copy = new Keyframe(keyframe.time, keyframe.value, keyframe.inTangent, keyframe.outTangent, keyframe.inWeight, keyframe.outWeight);
+            copy.weightedMode = WeightedMode.Both;
+            return copy;
+        }
+    }
 }

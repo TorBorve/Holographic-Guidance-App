@@ -1,16 +1,16 @@
-# 4D Holographic Tutorials
+# HoloGuidance
 
 ### Abstract
-In recent years, augmented and virtual reality devices experienced significant improvements in usability and processing power, directly leading to increased usage in industrial settings. In this paper, we present a novel application to enable diverse users to create 4D Holographic Tutorials for the HoloLens 2. To the author's best knowledge, no previous work exists trying to achieve a similar result. We focused on providing an easy to use user-interface, which allows users to create and watch tutorials step-by-step. Not only does it allow creating tutorials for specific locations, but it also provides the functionality to use the same tutorial for new locations. We describe the design of core features and publish the code as open-source software. To show the prevalent usability, a user study qualitatively measures the user experience. Given the broad domain of potential applications and research avenues, we lay a foundation for future work to create applications of this technology to diverse training scenarios.
+The advent of Augmented Reality (AR), Virtual Reality (VR), and Extended Reality (XR) technologies has significantly impacted various sectors, prompting substantial investments in related software and hardware. Among the promising applications of XR is its potential to enhance training in fields such as medicine and industrial engineering. Traditional training methods often fall short in effectively conveying complex physical tasks, leading to inefficiencies and reliance on experienced instructors. This paper introduces an innovative XR-based training application that builds on the foundation of 4D Holographic Tutorials, offering adaptive holographic guidance tailored to the user’s progress. Our contributions include the development of an XR application with adaptive guidance for intricate tasks, an intuitive user interface evaluated through a user study with 20 participants, and a proof-of-concept for sequence matching methods to assess trainee progress. The study reveals a positive user experience, with the application achieving an average rating of 7.15 out of 10 and a "Good" mark on the System Usability Scale (SUS). Future work aims to expand on the application of Dynamic Time Warping (DTW) for improved task assessment, incorporate critical pose snapshots, and enhance task explanation and item tracking within the app.
 
-Research semester project as part of 3D Vision lecture at ETH Zurich, 
-Spring 2022  
-https://www.cvg.ethz.ch/teaching/3dvision/ 
 
-Nicolas Wicki  
-Benjamin Hardin  
-Lukas Walker  
-Andrin Bertschi  
+Research semester project as part of [3D Vision lecture at ETH Zurich](https://cvg.ethz.ch/lectures/3D-vision/),   
+Spring 2024  
+
+Tor Børve Rasmussen  
+Faye Zhang  
+Styrmir Óli Þorsteinsson  
+Haoran Xu  
 
 ### Impressions
 Video Playlist: https://www.youtube.com/playlist?list=PL9ljg0RPLMToyLbPvqVUjwlWdnGND72LN
